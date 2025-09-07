@@ -118,9 +118,30 @@
         @media (max-width: 991.98px) {
             .sidebar {
                 left: -250px;
+                position: fixed;
+                z-index: 1050;
+                transition: left 0.3s;
+                width: 250px;
+                height: 100vh;
+                background: #2f2d2d;
+                top: 0;
+                bottom: 0;
             }
             .sidebar.show {
                 left: 0;
+            }
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.3);
+                z-index: 1049;
+            }
+            .sidebar.show ~ .sidebar-backdrop {
+                display: block;
             }
             .main-content {
                 margin-left: 0;
@@ -147,6 +168,7 @@
 
     <!-- Fixed Sidebar Navigation -->
     <nav id="sidebarMenu" class="sidebar">
+    <div class="sidebar-backdrop"></div>
         <div class="sidebar-brand">
             <img src="./img/logo2.png" alt="TSV Logo">
             Admin Panel
@@ -338,6 +360,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
             const navLinks = document.querySelectorAll('.nav-link[data-target]');
             const contentSections = document.querySelectorAll('.content-section');
             const sidebar = document.getElementById('sidebarMenu');
+            const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
             const mainTitle = document.getElementById('mainTitle');
             
             navLinks.forEach(link => {
@@ -359,6 +382,12 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
                     contentSections.forEach(section => section.classList.remove('active'));
                     // Show the target content section
                     document.getElementById(targetId).classList.add('active');
+
+                    // Hide sidebar on mobile after clicking a link
+                    if (window.innerWidth <= 991.98) {
+                        sidebar.classList.remove('show');
+                        if (sidebarBackdrop) sidebarBackdrop.style.display = 'none';
+                    }
                 });
             });
 
@@ -367,6 +396,19 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
             if (toggleButton) {
                 toggleButton.addEventListener('click', () => {
                     sidebar.classList.toggle('show');
+                    if (sidebar.classList.contains('show')) {
+                        if (sidebarBackdrop) sidebarBackdrop.style.display = 'block';
+                    } else {
+                        if (sidebarBackdrop) sidebarBackdrop.style.display = 'none';
+                    }
+                });
+            }
+
+            // Hide sidebar if backdrop is clicked
+            if (sidebarBackdrop) {
+                sidebarBackdrop.addEventListener('click', () => {
+                    sidebar.classList.remove('show');
+                    sidebarBackdrop.style.display = 'none';
                 });
             }
         });
