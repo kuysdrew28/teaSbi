@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSV Duty Runner</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      background: linear-gradient(to top, #222, #444);
+      border: 3px solid #fff;
+      border-radius: 10px;
+      display: block;
+    }
+    #score {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="score">Score: 0</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Set canvas responsive
+    function resizeCanvas() {
+      canvas.width = window.innerWidth > 500 ? 500 : window.innerWidth - 20;
+      canvas.height = window.innerHeight > 400 ? 400 : window.innerHeight - 100;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Player
+    let player = {
+      x: 50,
+      y: canvas.height - 60,
+      width: 40,
+      height: 40,
+      color: "lime",
+      dy: 0,
+      gravity: 0.7,
+      jumpPower: -12,
+      grounded: true
+    };
+
+    // Obstacles
+    let obstacles = [];
+    let obstacleSpeed = 4;
+
+    // Score
+    let score = 0;
+    let gameOver = false;
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function updatePlayer() {
+      player.y += player.dy;
+      player.dy += player.gravity;
+
+      if (player.y + player.height >= canvas.height - 20) {
+        player.y = canvas.height - 20 - player.height;
+        player.dy = 0;
+        player.grounded = true;
+      }
+    }
+
+    function spawnObstacle() {
+      let height = 30 + Math.random() * 20;
+      obstacles.push({
+        x: canvas.width,
+        y: canvas.height - 20 - height,
+        width: 30,
+        height: height,
+        color: "red"
+      });
+    }
+
+    function drawObstacles() {
+      obstacles.forEach(o => {
+        ctx.fillStyle = o.color;
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+      });
+    }
+
+    function updateObstacles() {
+      obstacles.forEach(o => o.x -= obstacleSpeed);
+      obstacles = obstacles.filter(o => o.x + o.width > 0);
+    }
+
+    function checkCollision() {
+      for (let o of obstacles) {
+        if (
+          player.x < o.x + o.width &&
+          player.x + player.width > o.x &&
+          player.y < o.y + o.height &&
+          player.y + player.height > o.y
+        ) {
+          gameOver = true;
+        }
+      }
+    }
+
+    function jump() {
+      if (player.grounded) {
+        player.dy = player.jumpPower;
+        player.grounded = false;
+      }
+    }
+
+    // Controls: space or tap
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") jump();
+    });
+    canvas.addEventListener("touchstart", () => {
+      jump();
+    });
+
+    // Game Loop
+    let frame = 0;
+    function gameLoop() {
+      if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
+        ctx.font = "20px Arial";
+        ctx.fillText("Score: " + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Ground
+      ctx.fillStyle = "#333";
+      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+      drawPlayer();
+      updatePlayer();
+
+      if (frame % 100 === 0) spawnObstacle();
+      drawObstacles();
+      updateObstacles();
+
+      checkCollision();
+
+      score++;
+      document.getElementById("score").innerText = "Score: " + score;
+
+      frame++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>

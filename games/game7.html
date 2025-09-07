@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Jumper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Tailwind's gray-800 */
+            color: #d1d5db; /* Tailwind's gray-300 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .game-container {
+            background-color: #111827; /* Tailwind's gray-900 */
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        #gameCanvas {
+            background-color: #f3f4f6; /* Tailwind's gray-100 */
+            border-radius: 1rem;
+            border: 4px solid #3b82f6; /* Tailwind's blue-500 */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            touch-action: none; /* Prevents default browser actions like pinch-zoom */
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 1rem 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: #10b981; /* Tailwind's emerald-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px #065f46; /* Tailwind's emerald-800 */
+            border: none;
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .btn:hover {
+            background-color: #059669; /* Tailwind's emerald-600 */
+            transform: translateY(-2px);
+        }
+
+        #game-over-message {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(17, 24, 39, 0.95);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 2px solid #ef4444;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        #game-over-message h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ef4444; /* Tailwind's red-500 */
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .info-panel {
+                font-size: 1rem;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Tech Jumper</h1>
+        
+        <div class="info-panel">
+            <span>Score: <span id="score">0</span></span>
+            <span>Speed: <span id="speed">1x</span></span>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <button id="startButton" class="btn">Start Game</button>
+        
+        <div id="game-over-message" class="hidden">
+            <h2 class="mb-4">Game Over!</h2>
+            <p class="text-xl mb-4">Final Score: <span id="finalScore">0</span></p>
+            <button id="playAgainButton" class="btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Setup ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const speedEl = document.getElementById('speed');
+        const startButton = document.getElementById('startButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const finalScoreEl = document.getElementById('finalScore');
+
+        // --- Game State Variables ---
+        let gameRunning = false;
+        let score = 0;
+        let speed = 5;
+        let obstacleSpawnRate = 120; // Lower is faster
+        let lastSpawnTime = 0;
+        let gravity = 0.5;
+        let isJumping = false;
+
+        // --- Game Objects ---
+        const player = {
+            x: 50,
+            y: 0,
+            width: 40,
+            height: 40,
+            velocityY: 0,
+            emoji: '👨‍💻' // Tech support person emoji
+        };
+
+        const techItems = [];
+        const obstacles = [];
+
+        // Emojis for collectibles and obstacles
+        const techEmojis = ['💻', '📸', '🎤'];
+        const obstacleEmojis = ['🍕', '📚', '⚽'];
+
+        // --- Helper Functions ---
+        
+        /**
+         * Sets the canvas dimensions to be responsive.
+         */
+        function resizeCanvas() {
+            canvas.width = Math.min(600, window.innerWidth * 0.9);
+            canvas.height = Math.min(400, window.innerHeight * 0.6);
+            player.y = canvas.height - player.height; // Place player on the ground
+        }
+
+        /**
+         * Generates a random integer within a range.
+         * @param {number} min The minimum value.
+         * @param {number} max The maximum value.
+         * @returns {number} A random integer.
+         */
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        /**
+         * Clears the canvas.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /**
+         * Draws the game objects on the canvas.
+         */
+        function draw() {
+            // Draw player
+            ctx.font = `${player.width}px Arial`;
+            ctx.fillText(player.emoji, player.x, player.y + player.height);
+
+            // Draw tech items
+            techItems.forEach(item => {
+                ctx.font = `${item.size}px Arial`;
+                ctx.fillText(item.emoji, item.x, item.y);
+            });
+
+            // Draw obstacles
+            obstacles.forEach(obstacle => {
+                ctx.font = `${obstacle.size}px Arial`;
+                ctx.fillText(obstacle.emoji, obstacle.x, obstacle.y);
+            });
+        }
+        
+        /**
+         * Handles player jumping.
+         */
+        function jump() {
+            if (!isJumping) {
+                isJumping = true;
+                player.velocityY = -12; // Set jump velocity
+            }
+        }
+        
+        /**
+         * Updates the game state on each frame.
+         */
+        function update() {
+            // Player vertical movement
+            player.y += player.velocityY;
+            player.velocityY += gravity;
+
+            // Ground collision
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                isJumping = false;
+                player.velocityY = 0;
+            }
+
+            // Spawn new objects
+            if (Date.now() - lastSpawnTime > obstacleSpawnRate) {
+                spawnObject();
+                lastSpawnTime = Date.now();
+            }
+
+            // Move and check for collisions with tech items
+            techItems.forEach((item, index) => {
+                item.x -= speed;
+                if (checkCollision(player, item)) {
+                    score += 10;
+                    scoreEl.textContent = score;
+                    techItems.splice(index, 1); // Remove collected item
+                } else if (item.x + item.size < 0) {
+                    techItems.splice(index, 1); // Remove item that went off screen
+                }
+            });
+
+            // Move and check for collisions with obstacles
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= speed;
+                if (checkCollision(player, obstacle)) {
+                    endGame(); // Game Over on collision
+                } else if (obstacle.x + obstacle.size < 0) {
+                    obstacles.splice(index, 1); // Remove obstacle that went off screen
+                }
+            });
+
+            // Increase speed and spawn rate over time for difficulty
+            if (score > 0 && score % 100 === 0 && score / 100 === Math.floor(score / 100)) {
+                speed += 0.5;
+                obstacleSpawnRate = Math.max(80, obstacleSpawnRate - 5);
+                speedEl.textContent = `${(speed / 5).toFixed(1)}x`;
+            }
+        }
+
+        /**
+         * Checks for a collision between two objects.
+         * @param {object} obj1 The first object.
+         * @param {object} obj2 The second object.
+         * @returns {boolean} True if a collision occurred, false otherwise.
+         */
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.size &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y &&
+                   obj1.y + obj1.height > obj2.y - obj2.size;
+        }
+
+        /**
+         * Spawns a new tech item or obstacle.
+         */
+        function spawnObject() {
+            const isTech = Math.random() < 0.7; // 70% chance to be a tech item
+            const size = getRandomInt(25, 40);
+            const x = canvas.width + size;
+            const y = canvas.height - size - 5; // Spawn on the ground
+            
+            if (isTech) {
+                const emoji = techEmojis[getRandomInt(0, techEmojis.length - 1)];
+                techItems.push({ x, y, size, emoji });
+            } else {
+                const emoji = obstacleEmojis[getRandomInt(0, obstacleEmojis.length - 1)];
+                obstacles.push({ x, y, size, emoji });
+            }
+        }
+
+        /**
+         * The main game loop.
+         */
+        function gameLoop() {
+            if (!gameRunning) return;
+            clearCanvas();
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        /**
+         * Resets the game state and starts the game.
+         */
+        function startGame() {
+            gameRunning = true;
+            score = 0;
+            speed = 5;
+            obstacleSpawnRate = 120;
+            techItems.length = 0;
+            obstacles.length = 0;
+            scoreEl.textContent = score;
+            speedEl.textContent = `1x`;
+            gameOverMessage.style.display = 'none';
+            startButton.style.display = 'none';
+
+            // Start the game loop
+            gameLoop();
+        }
+
+        /**
+         * Ends the game and shows the game over message.
+         */
+        function endGame() {
+            gameRunning = false;
+            finalScoreEl.textContent = score;
+            gameOverMessage.style.display = 'flex';
+            playAgainButton.style.display = 'block';
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', resizeCanvas);
+        startButton.addEventListener('click', startGame);
+        playAgainButton.addEventListener('click', () => {
+            gameOverMessage.style.display = 'none';
+            startGame();
+        });
+        
+        // Handle jump on click or spacebar
+        canvas.addEventListener('mousedown', jump);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat) {
+                jump();
+            }
+        });
+
+        // Initial setup
+        window.onload = () => {
+            resizeCanvas();
+        };
+
+    </script>
+</body>
+</html>

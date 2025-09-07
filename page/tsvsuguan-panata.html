@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Prevent Google and other bots from indexing -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/png" href="../img/logo2.png">
+  <title>TSV Schedules</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+
+  <style>
+    :root {
+      --primary-orange: #ff7e29;
+      --secondary-orange: #ff9e4d;
+      --third-orange: #0c63cd;
+      --dark-gray: #1a1a1a;
+      --light-gray: #f5f5f5;
+      --bg-dark: #121212;
+      --text-light: #e0e0e0;
+      --card-bg: #1e1e1e;
+      --transition-ease: 0.3s ease;
+    }
+    /* Video background */
+    .bg-video {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -2; /* keep behind overlay */
+    }
+
+    /* Dark overlay for dimming */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* adjust 0.5 for more/less dim */
+      z-index: -1;
+    }
+
+    /* Foreground content */
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    body { background-color: var(--bg-dark); font-family: 'Inter', sans-serif; color: var(--text-light); margin: 0; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+ .navbar { background: var(--dark-gray); border-bottom: 3px solid var(--primary-orange); transition: var(--transition-ease); }
+    .navbar-brand img { filter: drop-shadow(0 0 8px var(--primary-orange)); }
+    .nav-link { color: var(--text-light) !important; font-weight: 500; transition: var(--transition-ease); padding: 0.5rem 1rem !important; position: relative; }
+    .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background-color: var(--primary-orange); transition: var(--transition-ease); transform: translateX(-50%); }
+    .nav-link:hover::after, .nav-link.active::after { width: 80%; }
+    .nav-link:hover, .nav-link.active { color: var(--primary-orange) !important; }
+    .schedule-label { font-size: 1.5rem; font-weight: 700; color: var(--primary-orange); margin: 2rem 0 1rem; border-bottom: 2px solid rgba(255, 255, 255, 0.1); padding-bottom: .5rem; text-transform: uppercase; }
+    .schedule-card { background: var(--card-bg); border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid rgba(255, 126, 41, 0.2); }
+    .schedule-title { color: var(--secondary-orange); font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
+    .table { color: var(--text-light); }
+    .table th { color: var(--primary-orange); border-color: rgba(255, 255, 255, 0.1); }
+    .table td { border-color: rgba(255, 255, 255, 0.1); }
+    .btn { font-weight: bold; transition: var(--transition-ease); }
+    .btn-timein { background-color: var(--primary-orange); border: none; color: #121212; }
+    .btn-timeout { background-color: var(--third-orange); border: none; color: #fffdfd; }
+    .btn-absent { background-color: #b3261e; border: none; color: white; }
+    .btn-present { background-color: #05d438; border: none; color: white; }
+    .text-center small { color: rgba(255, 255, 255, 0.6); }
+    .table th.name-col, .table td.name-col { width: 70%; }
+    .table th.actions-col, .table td.actions-col { width: 30%; }
+    footer { background-color: var(--dark-gray); color: var(--text-light); padding: 40px 0; margin-top: auto; }
+    .footer-text { color: var(--text-light); }
+    .btn-link { color: var(--primary-orange); }
+    /* Overlay background */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none; /* hidden by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    /* Loading box */
+    .loading-box {
+      background: rgb(10, 10, 10);
+      padding: 20px 40px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    /* Spinner animation */
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+
+  <!-- Loading Pop-up -->
+  <div class="loading-overlay" id="loadingPopup">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Loading, please wait...</p>
+    </div>
+  </div>
+ <br><br><br><br>
+
+<div class="container my-5 flex-grow-1">
+  <h2 class="text-center">PANATA</h2>
+  <div id="scheduleContainer"></div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+  authDomain: "virac-tsv.firebaseapp.com",
+  projectId: "virac-tsv",
+  storageBucket: "virac-tsv.appspot.com",
+  messagingSenderId: "455316064834",
+  appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* -----------------------
+   Utilities (LOCAL TIME)
+-------------------------*/
+
+// Pad to 2 digits
+const p2 = (n) => String(n).padStart(2, "0");
+
+// Format a Date as local "YYYY-MM-DDTHH:MM:SS"
+function formatLocal(date) {
+  return `${date.getFullYear()}-${p2(date.getMonth() + 1)}-${p2(date.getDate())}T${p2(date.getHours())}:${p2(date.getMinutes())}:${p2(date.getSeconds())}`;
+}
+
+// Start of ISO week (Monday) in local time
+function startOfISOWeek(d) {
+  const t = new Date(d);
+  t.setHours(0, 0, 0, 0);
+  // JS getDay(): Sun=0..Sat=6 → make Mon=0..Sun=6
+  const day = (t.getDay() + 6) % 7;
+  t.setDate(t.getDate() - day);
+  return t;
+}
+
+// ISO week number (local)
+function getISOWeekNumber(date) {
+  // Copy date, local -> UTC math based on ISO definition
+  const d = new Date(date.getTime());
+  d.setHours(0, 0, 0, 0);
+  // Thursday of this week
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const firstThursday = new Date(d.getFullYear(), 0, 4);
+  // First Thursday of the year
+  firstThursday.setDate(firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7));
+  const diff = d - firstThursday;
+  return 1 + Math.round(diff / (7 * 24 * 3600 * 1000));
+}
+
+/* -----------------------
+   Dynamic Week + Map
+-------------------------*/
+
+const today = new Date();
+const currentWeek = getISOWeekNumber(today);
+const collectionName = `panata${currentWeek}`;
+
+// Update heading "Week XX"
+document.addEventListener("DOMContentLoaded", () => {
+  const small = document.querySelector("h2 small");
+  if (small) small.textContent = `Week ${currentWeek}`;
+});
+
+// Build scheduleMap for THIS ISO week (local)
+const monday = startOfISOWeek(today);
+
+// helper to make a local timestamp from Monday + offsetDays at hour:minute
+function makeSlot(offsetDays, hour, minute) {
+  const d = new Date(monday);
+  d.setDate(d.getDate() + offsetDays);
+  d.setHours(hour, minute, 0, 0);
+  return formatLocal(d); // local "YYYY-MM-DDTHH:MM:SS"
+}
+
+/*
+ Offsets from Monday:
+  Wed = +2, Thu = +3, Sat = +5, Sun = +6
+*/
+const scheduleMap = {
+  [makeSlot(0, 20, 0)]:  "Lunes 8:00PM",
+  [makeSlot(1, 20, 0)]:  "Martes 8:00PM",
+  [makeSlot(2, 20, 0)]: "Miyerkules 8:00PM",
+  [makeSlot(3, 20, 0)]:  "Huwebes 8:00PM",
+  [makeSlot(4, 20, 0)]:  "Biyernes 8:00PM",
+  [makeSlot(5, 20, 0)]:  "Sabado 8:00PM",
+  [makeSlot(6, 20, 0)]: "Linggo 8:00PM"
+};
+
+const scheduleGroups = {
+  "PANATA": [ "Lunes 8:00PM", "Martes 8:00PM", "Miyerkules 8:00PM", "Huwebes 8:00PM", "Biyernes 8:00PM", "Sabado 8:00PM", "Linggo 8:00PM"]
+};
+
+/* -----------------------
+   UI: Loading Overlay
+-------------------------*/
+function showLoading() {
+  document.getElementById("loadingPopup").style.display = "flex";
+  setTimeout(() => {
+    document.getElementById("loadingPopup").style.display = "none";
+  }, 1000);
+}
+
+/* -----------------------
+   Auth Gate
+-------------------------*/
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+    alert("Access denied. Only admitted users can view this page.");
+    window.location.href = "login.html";
+  } else {
+    loadSchedules();
+  }
+});
+
+/* -----------------------
+   Load + Render
+-------------------------*/
+async function loadSchedules() {
+  const scheduleContainer = document.getElementById("scheduleContainer");
+  scheduleContainer.innerHTML = "";
+
+  const grouped = {};
+  // Add Unassigned bucket so nothing disappears
+  grouped["Unassigned"] = [];
+
+  const snap = await getDocs(collection(db, collectionName));
+
+  // For debugging: show the computed schedule keys
+  console.log("Computed scheduleMap keys (local):", Object.keys(scheduleMap));
+
+  snap.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    // Normalize assignedTime to local "YYYY-MM-DDTHH:MM:SS"
+    let assignedKey;
+    const at = data.assignedTime;
+
+    if (typeof at === "string") {
+      // If it has milliseconds or timezone, trim to 19 chars
+      assignedKey = at.slice(0, 19);
+    } else if (at && typeof at.toDate === "function") {
+      // Firestore Timestamp
+      assignedKey = formatLocal(at.toDate());
+    } else {
+      assignedKey = null;
+    }
+
+    console.log("Doc:", docSnap.id, "assignedTime(raw):", at, "assignedKey(norm):", assignedKey);
+
+    const scheduleName = (assignedKey && scheduleMap[assignedKey]) ? scheduleMap[assignedKey] : "Unassigned";
+    if (!grouped[scheduleName]) grouped[scheduleName] = [];
+    grouped[scheduleName].push({ name: docSnap.id, ...data });
+  });
+
+  // Render sections in a fixed order from scheduleGroups
+  for (const [label, schedules] of Object.entries(scheduleGroups)) {
+    const labelEl = document.createElement("div");
+    labelEl.className = "schedule-label";
+    labelEl.textContent = label;
+    scheduleContainer.appendChild(labelEl);
+
+    schedules.forEach((schedule) => {
+      if (!grouped[schedule] || grouped[schedule].length === 0) return;
+
+      const card = document.createElement("div");
+      card.className = "schedule-card";
+      let html = `<div class="schedule-title">${schedule}</div>`;
+      html += `<div class="table-responsive"><table class="table table-dark table-bordered">
+                <thead><tr><th class="name-col">Name</th><th class="actions-col">Actions</th></tr></thead><tbody>`;
+
+      grouped[schedule].forEach((member) => {
+        if (member.absent) {
+          html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
+        } else if (!member.timeIn) {
+          html += `<tr><td>${member.name}</td><td><button class="btn btn-timein w-100" onclick="timeIn('${member.name}')">Pagtanggap</button></td></tr>`;
+        } else if (!member.timeOut) {
+          html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" onclick="timeOut('${member.name}')">Pagtupad</button></td></tr>`;
+        } else {
+          html += `<tr><td>${member.name}</td><td><button class="btn btn-present w-100" disabled>Completed</button></td></tr>`;
+        }
+      });
+
+      html += "</tbody></table></div>";
+      card.innerHTML = html;
+      scheduleContainer.appendChild(card);
+    });
+  }
+
+  // Render Unassigned at the end if it has members
+  if (grouped["Unassigned"] && grouped["Unassigned"].length) {
+    const labelEl = document.createElement("div");
+    labelEl.className = "schedule-label";
+    labelEl.textContent = "UNASSIGNED / CHECK ASSIGNED TIME";
+    scheduleContainer.appendChild(labelEl);
+
+    const card = document.createElement("div");
+    card.className = "schedule-card";
+    let html = `<div class="schedule-title">Unassigned</div>`;
+    html += `<div class="table-responsive"><table class="table table-dark table-bordered">
+              <thead><tr><th class="name-col">Name</th><th>Assigned Time (raw)</th></tr></thead><tbody>`;
+
+    grouped["Unassigned"].forEach((member) => {
+      html += `<tr><td>${member.name}</td><td>${member.assignedTime ?? "<i>none</i>"}</td></tr>`;
+    });
+
+    html += "</tbody></table></div>";
+    card.innerHTML = html;
+    scheduleContainer.appendChild(card);
+  }
+}
+
+/* -----------------------
+   Actions
+-------------------------*/
+window.timeIn = async function (name) {
+  showLoading();
+  await updateDoc(doc(db, collectionName, name), { timeIn: new Date().toISOString() });
+  loadSchedules();
+};
+
+window.timeOut = async function (name) {
+  showLoading();
+  await updateDoc(doc(db, collectionName, name), { timeOut: new Date().toISOString() });
+  loadSchedules();
+};
+</script>
+</body>
+</html>

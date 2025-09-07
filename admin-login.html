@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="img/logo2.png">
+  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #fff8f0;
+      height: 100vh;
+    }
+    .full-height-row {
+      min-height: 100vh;
+    }
+    .logo-panel {
+      background-color: #f7f3f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+    }
+    .logo-img {
+      max-width: 50%; /* Increased size for better visibility */
+      width: 100%;
+    }
+    .login-panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+    }
+    .login-card {
+      max-width: 450px;
+      width: 100%;
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-orange {
+      background-color: #ff7a00;
+      color: white;
+      border-color: #ff7a00;
+    }
+    .btn-orange:hover {
+      background-color: #e56a00;
+      color: white;
+      border-color: #e56a00;
+    }
+    a {
+      color: #ff7a00;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row full-height-row g-0">
+    <div class="col-lg-6 d-none d-lg-flex logo-panel">
+      <img src="/img/logo1.png" alt="System Logo" class="logo-img">
+    </div>
+
+    <div class="col-lg-6 d-flex login-panel">
+      <div class="login-card">
+  
+        
+  <h3 class="text-center mb-4" style="color:#ff7a00;">Admin Login</h3>
+  
+  <div class="mb-3 text-start">
+    <label for="email" class="form-label">Email</label>
+    <input type="email" id="email" class="form-control" placeholder="Enter email">
+  </div>
+
+  <div class="mb-3 text-start">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" id="password" class="form-control" placeholder="Enter password">
+  </div>
+
+  <button class="btn btn-orange w-100 mb-2" id="loginBtn">Login</button>
+
+  <div class="text-center">
+    <a href="#" id="forgotPasswordLink">Forgot password?</a>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBBMRruXH9Va15eBgogfwQF2zMD8gxZPps",
+    authDomain: "admin-1cbb9.firebaseapp.com",
+    projectId: "admin-1cbb9",
+    storageBucket: "admin-1cbb9.firebasestorage.app",
+    messagingSenderId: "300755873138",
+    appId: "1:300755873138:web:c54b3acf90f03b361241eb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Login
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    if (!email || !password) return alert("Please enter email and password");
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Login successful!");
+      window.location.href = "./admin-dashboard.html";
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+
+
+  // Forgot password
+  document.getElementById("forgotPasswordLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = prompt("Enter your email to reset password:");
+    if (!email) return;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent!");
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+</script>
+
+    <script type="module">
+      import { authGate } from "./js/firebase-auth-gate.js";
+      authGate({
+        loginPage: "admin-login.html"
+      });
+    </script>
+</body>
+</html>

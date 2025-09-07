@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Support Tycoon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #3b82f6; /* Tailwind's blue-500 */
+            --secondary-color: #f3f4f6; /* Tailwind's gray-100 */
+            --background-color: #1f2937; /* Tailwind's gray-800 */
+            --text-color: #d1d5db; /* Tailwind's gray-300 */
+            --correct-color: #10b981; /* Tailwind's emerald-500 */
+            --incorrect-color: #ef4444; /* Tailwind's red-500 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #111827; /* Tailwind's gray-900 */
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            transition: all 0.3s ease-in-out;
+            min-height: 600px;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
+
+        .info-panel {
+            display: flex;
+            gap: 1rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .score-box, .timer-box {
+            background-color: var(--background-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            border: 2px solid var(--primary-color);
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        #customer-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-color);
+            object-fit: cover;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        #problem {
+            background-color: var(--secondary-color);
+            color: #1f2937;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            text-align: center;
+            width: 100%;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+        }
+
+        #solutions-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .solution-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px var(--background-color);
+            border: none;
+            text-align: center;
+        }
+
+        .solution-btn:hover {
+            background-color: #2563eb; /* Tailwind's blue-600 */
+            transform: translateY(-2px);
+        }
+
+        #start-game {
+            background-color: var(--correct-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px #065f46; /* Tailwind's green-800 */
+            border: none;
+        }
+
+        #start-game:hover {
+            background-color: #059669; /* Tailwind's emerald-600 */
+            transform: translateY(-2px);
+        }
+
+        #message-box {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s;
+            z-index: 100;
+        }
+
+        #message-box.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #message-box.success {
+            background-color: var(--correct-color);
+        }
+
+        #message-box.failure {
+            background-color: var(--incorrect-color);
+        }
+
+        #end-game-message {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1rem;
+            }
+
+            .header {
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .info-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-gray-300">
+
+    <div id="message-box" class="hidden"></div>
+
+    <div class="game-container">
+        <div class="header">
+            <h1 class="text-white text-4xl font-extrabold mb-4">Tech Support Tycoon</h1>
+            <div class="info-panel">
+                <div class="score-box">Score: <span id="score">0</span></div>
+                <div class="timer-box">Time: <span id="timer">60</span>s</div>
+            </div>
+        </div>
+        
+        <div id="game-content" class="game-board">
+            <button id="start-game">Start Game</button>
+        </div>
+        
+    </div>
+
+    <script>
+        // Data for the game tickets. Each object is a single support request.
+        const tickets = [
+            {
+                problem: "My PC won't turn on. I've pressed the power button, but nothing happens. I hear a faint humming sound.",
+                solutions: [
+                    "Perform a complete system wipe and reinstall the operating system.",
+                    "Check if the power cable is securely plugged in at both the wall and the PC.",
+                    "The graphics card is likely faulty, you should replace it immediately.",
+                    "It's a malware issue. Run a full antivirus scan in safe mode."
+                ],
+                correctSolutionIndex: 1,
+                customerImage: 'https://placehold.co/120x120/55a6d9/ffffff?text=Joe'
+            },
+            {
+                problem: "I can't connect to my Wi-Fi. All other devices in the house work, but my laptop keeps saying 'No internet connection.'",
+                solutions: [
+                    "You need to call your Internet Service Provider to get a new router.",
+                    "Your laptop's Wi-Fi adapter is broken; you must buy a new one.",
+                    "Try restarting your modem and router by unplugging them for 30 seconds.",
+                    "Format your hard drive to fix any network driver corruption."
+                ],
+                correctSolutionIndex: 2,
+                customerImage: 'https://placehold.co/120x120/d955a6/ffffff?text=Jane'
+            },
+            {
+                problem: "My screen is frozen! I can't click anything. The cursor is stuck, but the background still has a moving video playing.",
+                solutions: [
+                    "End the process for the video player.",
+                    "Try pressing Ctrl + Alt + Delete to open the Task Manager.",
+                    "This is a sign of a failing CPU, you need a replacement.",
+                    "Disable your network firewall."
+                ],
+                correctSolutionIndex: 1,
+                customerImage: 'https://placehold.co/120x120/a6d955/ffffff?text=Sarah'
+            },
+            {
+                problem: "I am getting a 'disk full' error every time I try to save a new file. I don't know what to do!",
+                solutions: [
+                    "Defragment your hard drive to free up space.",
+                    "You must purchase and install an additional SSD.",
+                    "Delete unnecessary files and empty the Recycle Bin.",
+                    "Run the disk diagnostic tool from the manufacturer."
+                ],
+                correctSolutionIndex: 2,
+                customerImage: 'https://placehold.co/120x120/a655d9/ffffff?text=Mark'
+            },
+            {
+                problem: "My printer won't print anything. I've tried turning it off and on again, but the documents just sit in the queue.",
+                solutions: [
+                    "Check to make sure the printer is connected to the computer and has paper and ink.",
+                    "The print head is clogged and needs to be replaced.",
+                    "Update your operating system to the latest version.",
+                    "You need to reset your computer's BIOS settings."
+                ],
+                correctSolutionIndex: 0,
+                customerImage: 'https://placehold.co/120x120/d9a655/ffffff?text=Karen'
+            },
+            {
+                problem: "My laptop is running incredibly slow. It's taking a long time to open simple applications like a web browser.",
+                solutions: [
+                    "Install a new copy of the operating system on a USB drive.",
+                    "The problem is a lack of RAM; you need to buy and install more.",
+                    "Close unnecessary applications running in the background and check for malware.",
+                    "Clear the DNS cache on your network router."
+                ],
+                correctSolutionIndex: 2,
+                customerImage: 'https://placehold.co/120x120/55d9a6/ffffff?text=David'
+            }
+        ];
+
+        // --- Game State Variables ---
+        let score = 0;
+        let timer = 60;
+        let gameStarted = false;
+        let currentTicketIndex = 0;
+        let shuffledTickets = [];
+        let timerInterval = null;
+
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const gameContentEl = document.getElementById('game-content');
+        const startBtn = document.getElementById('start-game');
+        const messageBoxEl = document.getElementById('message-box');
+
+        // --- Core Game Functions ---
+
+        /**
+         * Shuffles an array using the Fisher-Yates (Knuth) algorithm.
+         * @param {Array} array The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Sets up the initial game state and event listeners.
+         */
+        function initGame() {
+            startBtn.addEventListener('click', startGame);
+        }
+
+        /**
+         * Starts the game, resetting all variables and beginning the timer.
+         */
+        function startGame() {
+            if (gameStarted) return;
+            gameStarted = true;
+            score = 0;
+            timer = 60;
+            currentTicketIndex = 0;
+            shuffledTickets = shuffleArray([...tickets]); // Shuffle a copy of the tickets
+            scoreEl.textContent = score;
+            timerEl.textContent = timer;
+            
+            // Render the first ticket and start the timer
+            renderTicket();
+            startTimer();
+        }
+
+        /**
+         * Renders the current ticket's problem and solutions to the UI.
+         */
+        function renderTicket() {
+            if (currentTicketIndex >= shuffledTickets.length) {
+                // If all tickets are solved, end the game
+                endGame();
+                return;
+            }
+            const currentTicket = shuffledTickets[currentTicketIndex];
+            
+            gameContentEl.innerHTML = `
+                <img id="customer-image" src="${currentTicket.customerImage}" alt="Customer Image" class="mb-4">
+                <div id="problem">${currentTicket.problem}</div>
+                <div id="solutions-container"></div>
+            `;
+            
+            const solutionsContainer = document.getElementById('solutions-container');
+            currentTicket.solutions.forEach((solution, index) => {
+                const button = document.createElement('button');
+                button.textContent = solution;
+                button.classList.add('solution-btn');
+                button.dataset.index = index;
+                solutionsContainer.appendChild(button);
+            });
+
+            // Use event delegation for the solutions container
+            solutionsContainer.addEventListener('click', handleSolutionClick, { once: true });
+        }
+
+        /**
+         * Handles a user's click on a solution button.
+         * @param {Event} event The click event.
+         */
+        function handleSolutionClick(event) {
+            const clickedBtn = event.target.closest('.solution-btn');
+            if (!clickedBtn) return;
+            
+            const selectedIndex = parseInt(clickedBtn.dataset.index);
+            const currentTicket = shuffledTickets[currentTicketIndex];
+
+            if (selectedIndex === currentTicket.correctSolutionIndex) {
+                // Correct solution
+                score += 10;
+                showMessage("Success! Ticket Resolved.", true);
+            } else {
+                // Incorrect solution
+                score = Math.max(0, score - 5);
+                showMessage("Incorrect solution. Customer is not happy.", false);
+            }
+            scoreEl.textContent = score;
+            currentTicketIndex++;
+            renderTicket(); // Move to the next ticket
+        }
+
+        /**
+         * Starts the game timer.
+         */
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                timerEl.textContent = timer;
+                if (timer <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        /**
+         * Ends the game and shows the final score.
+         */
+        function endGame() {
+            gameStarted = false;
+            clearInterval(timerInterval);
+            
+            let message = "Game Over! You've run out of time. Your final score is: " + score;
+            if (currentTicketIndex >= shuffledTickets.length) {
+                message = "Congratulations! You solved all the tickets! Your final score is: " + score;
+            }
+            
+            gameContentEl.innerHTML = `
+                <div id="end-game-message" class="text-center">
+                    ${message}
+                </div>
+                <button id="start-game" class="mt-8">Play Again</button>
+            `;
+            
+            document.getElementById('start-game').addEventListener('click', startGame);
+        }
+
+        /**
+         * Displays a temporary message to the user.
+         * @param {string} message The message to display.
+         * @param {boolean} isCorrect True for a success message, false for an error.
+         */
+        function showMessage(message, isCorrect) {
+            messageBoxEl.textContent = message;
+            messageBoxEl.classList.add('visible');
+            messageBoxEl.classList.remove('success', 'failure');
+            messageBoxEl.classList.add(isCorrect ? 'success' : 'failure');
+
+            setTimeout(() => {
+                messageBoxEl.classList.remove('visible');
+            }, 1500);
+        }
+
+        // Initialize the game when the window loads
+        window.onload = initGame;
+    </script>
+</body>
+</html>

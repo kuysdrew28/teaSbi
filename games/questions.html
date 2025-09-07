@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Quiz Questions</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain: "virac-tsv.firebaseapp.com",
+      projectId: "virac-tsv",
+      storageBucket: "virac-tsv.appspot.com",
+      messagingSenderId: "455316064834",
+      appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 🔹 Example Questions (replace with your 50+ list later)
+    const questions = [
+      {
+        "question": "What does IP in IP address stand for?",
+        "options": ["Internet Protocol", "Internal Process", "Input Port", "Integrated Program"],
+        "answer": "Internet Protocol"
+      },
+      {
+        "question": "Which device is primarily used to connect multiple computers within a local area network (LAN)?",
+        "options": ["Router", "Switch", "Firewall", "Modem"],
+        "answer": "Switch"
+      },
+      {
+        "question": "Which layer of the OSI model is responsible for end-to-end communication and error recovery?",
+        "options": ["Network Layer", "Data Link Layer", "Transport Layer", "Session Layer"],
+        "answer": "Transport Layer"
+      },
+      
+    
+  {
+    "question": "What does IP in IP address stand for?",
+    "options": ["Internet Protocol", "Internal Process", "Input Port", "Integrated Program"],
+    "answer": "Internet Protocol"
+  },
+  {
+    "question": "Which device is primarily used to connect multiple computers within a local area network (LAN)?",
+    "options": ["Router", "Switch", "Firewall", "Modem"],
+    "answer": "Switch"
+  },
+  {
+    "question": "In binary, what is the result of 1 + 1?",
+    "options": ["0", "1", "10", "11"],
+    "answer": "10"
+  },
+  {
+    "question": "Which layer of the OSI model is responsible for end-to-end communication and error recovery?",
+    "options": ["Network Layer", "Data Link Layer", "Transport Layer", "Session Layer"],
+    "answer": "Transport Layer"
+  },
+  {
+    "question": "What does HTML stand for?",
+    "options": ["HyperText Markup Language", "High Transfer Media Line", "Home Tool Markup Language", "Hyperlink and Text Management Language"],
+    "answer": "HyperText Markup Language"
+  },
+  {
+    "question": "Which component is considered the 'brain' of the computer?",
+    "options": ["RAM", "Hard Drive", "CPU", "Motherboard"],
+    "answer": "CPU"
+  },
+  {
+    "question": "Which network topology connects all devices to a single central hub?",
+    "options": ["Bus", "Ring", "Star", "Mesh"],
+    "answer": "Star"
+  },
+  {
+    "question": "Which protocol is used to securely browse websites?",
+    "options": ["FTP", "HTTP", "HTTPS", "SMTP"],
+    "answer": "HTTPS"
+  },
+  {
+    "question": "What unit is used to measure the speed of a processor?",
+    "options": ["Gigabytes", "Hertz", "Bits", "Pixels"],
+    "answer": "Hertz"
+  },
+  {
+    "question": "Which type of cable is commonly used in wired networking?",
+    "options": ["Coaxial Cable", "Fiber Optic Cable", "Twisted Pair Cable", "All of the above"],
+    "answer": "All of the above"
+  },
+  {
+    "question": "What does CPU stand for?",
+    "options": ["Central Processing Unit", "Control Processing Unit", "Computer Personal Unit", "Central Protocol Utility"],
+    "answer": "Central Processing Unit"
+  },
+  {
+    "question": "Which memory is volatile?",
+    "options": ["ROM", "RAM", "Flash Memory", "Hard Drive"],
+    "answer": "RAM"
+  },
+  {
+    "question": "What does DNS stand for?",
+    "options": ["Domain Name System", "Digital Number Service", "Data Network System", "Direct Node Setup"],
+    "answer": "Domain Name System"
+  },
+  {
+    "question": "What is the main function of a firewall?",
+    "options": ["To speed up the network", "To filter traffic", "To store files", "To encrypt data"],
+    "answer": "To filter traffic"
+  },
+  {
+    "question": "Which is an example of an input device?",
+    "options": ["Monitor", "Keyboard", "Printer", "Speaker"],
+    "answer": "Keyboard"
+  },
+  {
+    "question": "Which is NOT an operating system?",
+    "options": ["Windows", "Linux", "Oracle", "macOS"],
+    "answer": "Oracle"
+  },
+  {
+    "question": "Which command is used to test network connectivity?",
+    "options": ["ping", "test", "ipconfig", "trace"],
+    "answer": "ping"
+  },
+  {
+    "question": "What does URL stand for?",
+    "options": ["Uniform Resource Locator", "Universal Routing Link", "User Reference Line", "Unified Record Locator"],
+    "answer": "Uniform Resource Locator"
+  },
+  {
+    "question": "What does SQL stand for?",
+    "options": ["Structured Query Language", "Standard Query Link", "Simple Quick Language", "Sequential Query Logic"],
+    "answer": "Structured Query Language"
+  },
+  {
+    "question": "What is the default port for HTTP?",
+    "options": ["21", "25", "80", "443"],
+    "answer": "80"
+  },
+  {
+    "question": "What is the default port for HTTPS?",
+    "options": ["22", "443", "110", "8080"],
+    "answer": "443"
+  },
+  {
+    "question": "Which key combination is commonly used to copy text?",
+    "options": ["Ctrl + V", "Ctrl + C", "Ctrl + X", "Ctrl + Z"],
+    "answer": "Ctrl + C"
+  },
+  {
+    "question": "Which part of the computer is responsible for graphics rendering?",
+    "options": ["RAM", "GPU", "CPU", "Motherboard"],
+    "answer": "GPU"
+  },
+  {
+    "question": "Which of the following is a NoSQL database?",
+    "options": ["MySQL", "MongoDB", "PostgreSQL", "Oracle DB"],
+    "answer": "MongoDB"
+  },
+  {
+    "question": "What does LAN stand for?",
+    "options": ["Local Area Network", "Logical Access Node", "Large Application Network", "Linked Area Node"],
+    "answer": "Local Area Network"
+  },
+  {
+    "question": "Which device converts digital signals into analog for telephone lines?",
+    "options": ["Router", "Switch", "Modem", "Repeater"],
+    "answer": "Modem"
+  },
+  {
+    "question": "What does BIOS stand for?",
+    "options": ["Basic Input Output System", "Binary Input Output Setup", "Base Integrated Operating System", "Basic Internal Output System"],
+    "answer": "Basic Input Output System"
+  },
+  {
+    "question": "What does GUI stand for?",
+    "options": ["Graphical User Interface", "General User Input", "Graphics Unified Integration", "Guided User Interaction"],
+    "answer": "Graphical User Interface"
+  },
+  {
+    "question": "Which language is mainly used for web development?",
+    "options": ["C++", "Python", "JavaScript", "Assembly"],
+    "answer": "JavaScript"
+  },
+  {
+    "question": "What does HTTP stand for?",
+    "options": ["HyperText Transfer Protocol", "High Transmission Text Protocol", "Hyper Transfer Technology Protocol", "Hyperlink Text Transfer Program"],
+    "answer": "HyperText Transfer Protocol"
+  },
+  {
+    "question": "What does SMTP stand for?",
+    "options": ["Simple Mail Transfer Protocol", "Secure Messaging Text Protocol", "Standard Mail Transmission Process", "Simple Management Transfer Protocol"],
+    "answer": "Simple Mail Transfer Protocol"
+  },
+  {
+    "question": "Which device extends the range of a network?",
+    "options": ["Router", "Switch", "Repeater", "Hub"],
+    "answer": "Repeater"
+  },
+  {
+    "question": "Which unit measures data transfer speed?",
+    "options": ["Hz", "Mbps", "Ohms", "Volts"],
+    "answer": "Mbps"
+  },
+  {
+    "question": "Which company developed the Windows operating system?",
+    "options": ["Apple", "Microsoft", "IBM", "Google"],
+    "answer": "Microsoft"
+  },
+  {
+    "question": "Which company created the iPhone?",
+    "options": ["Samsung", "Apple", "Nokia", "Sony"],
+    "answer": "Apple"
+  },
+  {
+    "question": "Which device is used to protect a computer from power surges?",
+    "options": ["Router", "UPS", "Switch", "Modem"],
+    "answer": "UPS"
+  },
+  {
+    "question": "What does VPN stand for?",
+    "options": ["Virtual Private Network", "Variable Protocol Node", "Verified Personal Network", "Virtual Program Net"],
+    "answer": "Virtual Private Network"
+  },
+  {
+    "question": "What does IP address 127.0.0.1 refer to?",
+    "options": ["Public IP", "Private IP", "Loopback Address", "Broadcast Address"],
+    "answer": "Loopback Address"
+  },
+  {
+    "question": "What is phishing?",
+    "options": ["A hacking attempt to steal information", "A type of firewall", "A WiFi encryption method", "A data compression technique"],
+    "answer": "A hacking attempt to steal information"
+  },
+  {
+    "question": "Which programming language is primarily used for Android app development?",
+    "options": ["Swift", "Kotlin", "Ruby", "PHP"],
+    "answer": "Kotlin"
+  },
+  {
+    "question": "What does CSS stand for?",
+    "options": ["Cascading Style Sheets", "Central Styling System", "Colorful Script Syntax", "Computer Style Setup"],
+    "answer": "Cascading Style Sheets"
+  },
+  {
+    "question": "What is the maximum length of a standard Ethernet cable?",
+    "options": ["50 meters", "100 meters", "150 meters", "200 meters"],
+    "answer": "100 meters"
+  },
+  {
+    "question": "Which protocol is used to transfer files between computers?",
+    "options": ["SMTP", "FTP", "HTTP", "SNMP"],
+    "answer": "FTP"
+  },
+  {
+    "question": "Which device assigns IP addresses dynamically?",
+    "options": ["Switch", "DHCP Server", "Router", "Modem"],
+    "answer": "DHCP Server"
+  },
+  {
+    "question": "What does IoT stand for?",
+    "options": ["Internet of Things", "Input Output Technology", "Internal Operating Task", "Integrated Open Technology"],
+    "answer": "Internet of Things"
+  },
+  {
+    "question": "Which storage device has no moving parts?",
+    "options": ["HDD", "CD", "SSD", "DVD"],
+    "answer": "SSD"
+  },
+  {
+    "question": "What does MAC address stand for?",
+    "options": ["Media Access Control", "Machine Active Connection", "Main Address Code", "Multiple Access Channel"],
+    "answer": "Media Access Control"
+  },
+  {
+    "question": "Which part of the computer stores data permanently?",
+    "options": ["RAM", "Cache", "Hard Drive", "Registers"],
+    "answer": "Hard Drive"
+  },
+  {
+    "question": "Which command is used to display the IP address of a computer?",
+    "options": ["ifconfig", "netstat", "ping", "nslookup"],
+    "answer": "ifconfig"
+  },
+  {
+    "question": "Which of the following is an example of an output device?",
+    "options": ["Mouse", "Monitor", "Keyboard", "Scanner"],
+    "answer": "Monitor"
+  },
+  {
+    "question": "Which encryption standard is commonly used for securing WiFi?",
+    "options": ["WEP", "WPA2", "SSL", "TLS"],
+    "answer": "WPA2"
+  },
+  {
+    "question": "Which logic gate outputs 1 only if all inputs are 1?",
+    "options": ["OR", "XOR", "AND", "NOT"],
+    "answer": "AND"
+  },
+  {
+    "question": "Which protocol is used to send emails?",
+    "options": ["SMTP", "IMAP", "POP3", "HTTP"],
+    "answer": "SMTP"
+  },
+  {
+    "question": "What does API stand for?",
+    "options": ["Application Programming Interface", "Advanced Protocol Integration", "Applied Program Instruction", "Automated Processing Input"],
+    "answer": "Application Programming Interface"
+  }
+
+
+      
+    ];
+
+    async function uploadQuestions() {
+      const status = document.getElementById("status");
+      status.textContent = "⏳ Uploading questions...";
+
+      try {
+        let uploaded = 0;
+        for (let q of questions) {
+          // ✅ Validate each question
+          if (!q || typeof q !== "object" || !q.question || !q.options || !q.answer) {
+            console.warn("⚠️ Skipping invalid question:", q);
+            continue;
+          }
+
+          await addDoc(collection(db, "quiz_questions"), {
+            question: q.question,
+            options: q.options,
+            answer: q.answer
+          });
+          uploaded++;
+        }
+        status.textContent = `✅ Successfully uploaded ${uploaded} questions!`;
+      } catch (error) {
+        console.error("Error uploading questions: ", error);
+        status.textContent = "❌ Upload failed: " + error.message;
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("uploadBtn").addEventListener("click", uploadQuestions);
+    });
+  </script>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <h2>📤 Upload Quiz Questions to Firestore</h2>
+  <button id="uploadBtn" style="padding:10px 20px; font-size:16px;">Upload Questions</button>
+  <p id="status"></p>
+</body>
+</html>

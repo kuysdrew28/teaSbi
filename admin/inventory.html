@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TSV Equipment Inventory</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --dark-bg: #1A1A1A;
+      --card-bg: #2B2B2B;
+      --primary-orange: #FF8C00;
+      --secondary-orange: #FFB74D;
+      --accent-green: #4CAF50;
+      --accent-red: #D32F2F;
+      --accent-yellow: #FFC107;
+      --text-color: #E0E0E0;
+      --subtle-text: #BDBDBD;
+      --border-color: #444;
+    }
+    * { box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
+    body { margin: 0; background: var(--dark-bg); color: var(--text-color); }
+.container {
+  width: 100%;      /* stretch full width */
+  max-width: none;  /* remove restriction */
+  margin: 0;        /* no auto-centering */
+  padding: 16px;    /* keep padding */
+  min-height: 100vh; /* fill vertical space */
+}
+
+    header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+    h1 { font-size: 2rem; margin: 0; color: var(--primary-orange); font-family: 'Poppins', sans-serif; font-weight: 700; }
+    .header-note { color: var(--subtle-text); font-size: 0.9rem; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+    form .row { display: flex; gap: 12px; margin-bottom: 12px; }
+    input, select, textarea { font: inherit; flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #333; color: var(--text-color); }
+    textarea { resize: vertical; }
+    .actions { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+    button { font-family: 'Poppins', sans-serif; font-weight: 600; transition: 0.3s; }
+    button:not(.ghost) { background: var(--primary-orange); color: var(--dark-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
+    button.ghost { background: transparent; color: var(--primary-orange); border: 1px solid rgba(255,140,0,0.2); padding: 12px 20px; border-radius: 8px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
+    th { color: var(--secondary-orange); font-weight: 600; text-transform: uppercase; font-family: 'Poppins', sans-serif; }
+    .status { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+    .ok { background: var(--accent-green); color: #fff; }
+    .missing { background: var(--accent-yellow); color: #000; }
+    .damaged { background: var(--accent-red); color: #fff; }
+    .footer { text-align: center; margin-top: 20px; color: var(--subtle-text); font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+
+
+    <div class="card">
+      <form id="itemForm">
+        <input type="hidden" id="itemId" />
+        <div class="row">
+          <input id="name" placeholder="Item name" required />
+          <input id="qty" type="number" min="0" placeholder="Quantity" required />
+        </div>
+        <div class="row">
+          <input id="category" placeholder="Category" />
+          <input id="location" placeholder="Location" />
+        </div>
+        <div class="row">
+          <select id="status">
+            <option value="OK">OK</option>
+            <option value="Missing">Missing</option>
+            <option value="Damaged">Damaged</option>
+          </select>
+        </div>
+        <div class="row">
+          <textarea id="notes" rows="2" placeholder="Notes / condition"></textarea>
+        </div>
+        <div class="actions">
+          <button type="submit" id="saveBtn">Add item</button>
+          <button type="button" id="clearBtn" class="ghost">Clear</button>
+          <div style="margin-left:auto" class="small">Collection: <strong>tsv-equipment</strong></div>
+        </div>
+      </form>
+
+      <div class="search">
+        <input id="filter" placeholder="Search by name, category, or location" />
+        <button id="exportBtn" class="ghost" type="button">Export CSV</button>
+      </div>
+
+      <div id="list" style="overflow:auto; max-height:420px;">
+        <table id="table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Qty</th><th>Category</th><th>Location</th><th>Status</th><th>Notes</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+  </div>
+
+  <script type="module">
+    const firebaseConfig = { 
+      apiKey:"AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain:"virac-tsv.firebaseapp.com",
+      projectId:"virac-tsv",
+      storageBucket:"virac-tsv.appspot.com",
+      messagingSenderId:"455316064834",
+      appId:"1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, 'tsv-equipment');
+
+    const itemForm = document.getElementById('itemForm');
+    const nameIn = document.getElementById('name');
+    const qtyIn = document.getElementById('qty');
+    const catIn = document.getElementById('category');
+    const locIn = document.getElementById('location');
+    const notesIn = document.getElementById('notes');
+    const statusIn = document.getElementById('status');
+    const tbody = document.getElementById('tbody');
+    const filterInput = document.getElementById('filter');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const itemIdInput = document.getElementById('itemId');
+
+    // Add or update
+    itemForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const payload = {
+        name: nameIn.value.trim(),
+        qty: Number(qtyIn.value) || 0,
+        category: catIn.value.trim() || null,
+        location: locIn.value.trim() || null,
+        status: statusIn.value,
+        notes: notesIn.value.trim() || null,
+        updatedAt: serverTimestamp()
+      };
+      const id = itemIdInput.value;
+      if(id){
+        await updateDoc(doc(db, 'tsv-equipment', id), payload);
+        saveBtn.textContent = 'Add item'; itemIdInput.value = '';
+      } else {
+        payload.createdAt = serverTimestamp();
+        await addDoc(colRef, payload);
+      }
+      itemForm.reset();
+    });
+    clearBtn.addEventListener('click', ()=>{ itemForm.reset(); itemIdInput.value=''; saveBtn.textContent='Add item'; });
+
+    const q = query(colRef, orderBy('name'));
+    let latestDocs = [];
+    onSnapshot(q, (snap)=>{
+      latestDocs = []; snap.forEach(d=>latestDocs.push({id:d.id, ...d.data()}));
+      renderTable(latestDocs);
+    });
+
+    function renderTable(items){
+      const term = filterInput.value.trim().toLowerCase();
+      const rows = items.filter(it=>{
+        if(!term) return true;
+        return (it.name||'').toLowerCase().includes(term) || (it.category||'').toLowerCase().includes(term) || (it.location||'').toLowerCase().includes(term);
+      }).map(it=>{
+        return `
+          <tr data-id="${it.id}">
+            <td>${escapeHtml(it.name||'—')}</td>
+            <td>${Number(it.qty)||0}</td>
+            <td>${escapeHtml(it.category||'—')}</td>
+            <td>${escapeHtml(it.location||'—')}</td>
+            <td>${statusBadge(it.status)}</td>
+            <td class="small">${escapeHtml(it.notes||'')}</td>
+            <td>
+              <button class="ghost" data-action="edit">Edit</button>
+              <button class="ghost delete-btn" data-action="delete">Delete</button>
+            </td>
+          </tr>`;
+      }).join('');
+      tbody.innerHTML = rows || '<tr><td colspan="7" class="small">No items found.</td></tr>';
+    }
+
+    function statusBadge(s){
+      if(!s) return '';
+      const st = s.toLowerCase();
+      if(st==="missing") return `<span class="status missing">Missing</span>`;
+      if(st==="damaged") return `<span class="status damaged">Damaged</span>`;
+      return `<span class="status ok">OK</span>`;
+    }
+
+    tbody.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      const tr = btn.closest('tr'); const id = tr.dataset.id;
+      if(btn.dataset.action==='edit'){
+        const item = latestDocs.find(d=>d.id===id);
+        if(item){ nameIn.value=item.name||''; qtyIn.value=item.qty||0; catIn.value=item.category||''; locIn.value=item.location||''; notesIn.value=item.notes||''; statusIn.value=item.status||'OK'; itemIdInput.value=id; saveBtn.textContent='Update item'; }
+      } else if(btn.dataset.action==='delete'){ if(confirm('Delete this item?')) await deleteDoc(doc(db,'tsv-equipment',id)); }
+    });
+
+    filterInput.addEventListener('input', ()=>renderTable(latestDocs));
+
+    exportBtn.addEventListener('click', ()=>{
+      if(!latestDocs.length) return alert('No data to export');
+      const rows = latestDocs.map(d=>({id:d.id,name:d.name||'',qty:d.qty||0,category:d.category||'',location:d.location||'',status:d.status||'OK',notes:d.notes||''}));
+      const csv = toCSV(rows); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tsv-equipment.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    function escapeHtml(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+    function toCSV(arr){ const keys=['id','name','qty','category','location','status','notes']; const esc=v=>`"${String(v||'').replaceAll('"','""')}"`; const header=keys.join(',')+'\\n'; const lines=arr.map(r=>keys.map(k=>esc(r[k])).join(',')); return header+lines.join('\\n'); }
+  </script>
+</body>
+</html>

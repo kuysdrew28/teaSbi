@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Assign Schedule</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      background-color: #121212;
+      font-family: 'Inter', sans-serif;
+      color: #e0e0e0;
+    }
+    h1 {
+      color: #ff7e29;
+      text-align: center;
+      margin: 2rem 0;
+    }
+    table {
+      background: #1e1e1e;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    thead {
+      background: #ff7e29;
+      color: #1a1a1a;
+      font-weight: bold;
+    }
+    td, th {
+      vertical-align: middle;
+    }
+    select {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border: 1px solid #ff7e29;
+      border-radius: 6px;
+      padding: 5px;
+    }
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .assignBtn {
+      background: #ff7e29;
+      color: #1a1a1a;
+    }
+    .assignBtn:hover {
+      background: #ff9e4d;
+    }
+    .removeBtn {
+      background: #6c757d;
+      color: #fff;
+    }
+    .removeBtn:hover {
+      background: #8a9ba8;
+    }
+    .deleteBtn {
+      background: #dc3545;
+      color: #fff;
+    }
+    .deleteBtn:hover {
+      background: #e85c6b;
+    }
+    .add-user {
+      background: #28a745;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .add-user:hover {
+      background: #45c96e;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Assign Schedule for Devotional Prayer</h1>
+
+  <!-- Week selector -->
+  <div class="mb-3 text-center">
+    <label class="fw-bold me-2">Select Week Database:</label>
+    <select id="weekSelect" class="form-select d-inline-block w-auto">
+      <option value="">-- Choose Week --</option>
+      <option value="panata36">wk36</option>
+      <option value="panata37">wk37</option>
+      <option value="panata38">wk38</option>
+      <option value="panata39">wk39</option>
+      <option value="panata40">wk40</option>
+      <option value="panata41">wk41</option>
+      <option value="panata42">wk42</option>
+      <option value="panata43">wk43</option>
+      <option value="panata44">wk44</option>
+      <option value="panata45">wk45</option>
+      <option value="panata46">wk46</option>
+      <option value="panata47">wk47</option>
+    </select>
+  </div>
+
+  <!-- Add User Button -->
+  <div class="d-flex justify-content-end mb-3">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+<button onclick="window.location.href='../admin-panel.html'">
+  Go to Admin Panel
+</button>
+    <button id="addUserBtn" class="add-user btn">➕ Add User</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-dark table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Schedule</th>
+          <th>Action</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody id="assignTable"></tbody>
+    </table>
+  </div>
+  <div id="status" class="text-center fw-bold mt-3"></div>
+</div>
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+  import { 
+    getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
+  } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+    authDomain: "virac-tsv.firebaseapp.com",
+    projectId: "virac-tsv",
+    storageBucket: "virac-tsv.appspot.com",
+    messagingSenderId: "455316064834",
+    appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // =========================
+  // TIMES (exact as requested)
+  // =========================
+  // weekday index: 0=Mon ... 6=Sun
+  const baseSchedules = [
+    { label:"Monday 8:00 PM",   weekday: 0, hour: 20,  minute: 0  },
+    { label:"Tuesday 8:00 PM",   weekday: 1, hour: 20,  minute: 0  },
+    { label:"Wednesday 8:00 PM",   weekday: 2, hour: 20,  minute: 0  },
+     { label:"Thursday 8:00 PM",   weekday: 3, hour: 20,  minute: 0  },
+      { label:"Friday 8:00 PM",   weekday: 4, hour: 20,  minute: 0  },
+       { label:"Saturday 8:00 PM",   weekday: 5, hour: 20,  minute: 0  },
+        { label:"Sunday 8:00 PM",   weekday: 6, hour: 20,  minute: 0  },
+
+  ];
+
+  // ---------- helpers ----------
+  function pad(n){ return String(n).padStart(2,"0"); }
+
+  // Format as LOCAL YYYY-MM-DDTHH:MM:SS (no timezone suffix)
+  function formatLocal(date){
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}` +
+           `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
+  // Monday (00:00 local) of ISO week in the current year
+  function getISOMondayOfWeekLocal(week, year){
+    // ISO week 1 is the week with Jan 4; get its Monday in LOCAL time
+    const jan4 = new Date(year, 0, 4);
+    const day = jan4.getDay() === 0 ? 7 : jan4.getDay(); // 1..7 (Mon..Sun)
+    const mondayWeek1 = new Date(jan4);
+    mondayWeek1.setDate(jan4.getDate() - (day - 1));
+    mondayWeek1.setHours(0,0,0,0);
+    const mondayTarget = new Date(mondayWeek1);
+    mondayTarget.setDate(mondayWeek1.getDate() + (week - 1) * 7);
+    return mondayTarget;
+  }
+
+  function generateSchedulesForWeek(weekNum){
+    const year = new Date().getFullYear();
+    const monday = getISOMondayOfWeekLocal(weekNum, year); // local midnight
+    return baseSchedules.map(s=>{
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + s.weekday);
+      d.setHours(s.hour, s.minute, 0, 0);
+      return { label: s.label, value: formatLocal(d) };
+    });
+  }
+
+  // ---------- state ----------
+  let weekCollection = "";
+  let schedules = [];
+  let participants = [];
+
+  const tableBody = document.getElementById("assignTable");
+  const statusDiv = document.getElementById("status");
+  const addUserBtn = document.getElementById("addUserBtn");
+  const weekSelect = document.getElementById("weekSelect");
+
+  // ---------- UI render ----------
+  function renderTable(){
+    tableBody.innerHTML = "";
+    participants.sort((a,b)=> (a.name || "").localeCompare(b.name || ""));
+
+    participants.forEach(({ id, name })=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${name || ""}</td>
+        <td>
+          <select class="form-select schedule-select">
+            <option value="">-- Select --</option>
+            ${schedules.map(s => `<option value="${s.value}">${s.label}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <button class="assignBtn btn-sm btn" style="background:#ff7e29;color:#1a1a1a;">Assign</button>
+          <button class="removeBtn btn-sm btn ms-1" style="background:#6c757d;color:#fff;">Remove</button>
+        </td>
+        <td><button class="deleteBtn btn-sm btn" style="background:#dc3545;color:#fff;">Delete</button></td>
+      `;
+      tableBody.appendChild(tr);
+
+      const assignBtn = tr.querySelector(".assignBtn");
+      const removeBtn = tr.querySelector(".removeBtn");
+      const deleteBtn = tr.querySelector(".deleteBtn");
+      const select = tr.querySelector(".schedule-select");
+
+      assignBtn.addEventListener("click", async ()=>{
+        if(!weekCollection){
+          statusDiv.textContent = "⚠ Please select a week database first.";
+          statusDiv.style.color = "orange";
+          return;
+        }
+        const datetime = select.value;
+        if(!datetime){
+          statusDiv.textContent = `⚠ Please select a schedule for ${name}`;
+          statusDiv.style.color = "orange";
+          return;
+        }
+        try{
+          await setDoc(doc(db, weekCollection, name), { assignedTime: datetime }, { merge:true });
+          statusDiv.textContent = `✅ Assigned ${name} to ${datetime} in ${weekCollection}`;
+          statusDiv.style.color = "lightgreen";
+        }catch(err){
+          statusDiv.textContent = `❌ Error: ${err.message}`;
+          statusDiv.style.color = "red";
+        }
+      });
+
+      removeBtn.addEventListener("click", async ()=>{
+        if(!weekCollection){
+          statusDiv.textContent = "⚠ Please select a week database first.";
+          statusDiv.style.color = "orange";
+          return;
+        }
+        if(confirm(`Remove assigned schedule for ${name}?`)){
+          try{
+            await setDoc(doc(db, weekCollection, name), { assignedTime: null }, { merge:true });
+            statusDiv.textContent = `🗑 Removed schedule for ${name} in ${weekCollection}`;
+            statusDiv.style.color = "yellow";
+          }catch(err){
+            statusDiv.textContent = `❌ Error: ${err.message}`;
+            statusDiv.style.color = "red";
+          }
+        }
+      });
+
+      deleteBtn.addEventListener("click", async ()=>{
+        if(confirm(`Delete participant "${name}"?`)){
+          try{
+            await deleteDoc(doc(db, "seminar_participants", id));
+            statusDiv.textContent = `🗑 Deleted ${name}`;
+            statusDiv.style.color = "red";
+          }catch(err){
+            statusDiv.textContent = `❌ Error: ${err.message}`;
+            statusDiv.style.color = "red";
+          }
+        }
+      });
+    });
+  }
+
+  // ---------- week selector ----------
+  weekSelect.addEventListener("change", e=>{
+    weekCollection = e.target.value; // e.g., "wk36"
+    if(weekCollection){
+      const weekNum = parseInt(weekCollection.replace("panata",""), 10);
+      schedules = generateSchedulesForWeek(weekNum);
+      statusDiv.textContent = `📌 Active Database: ${weekCollection}`;
+      statusDiv.style.color = "lightblue";
+      renderTable(); // refresh dropdown options with new dates
+    }else{
+      schedules = [];
+      statusDiv.textContent = "⚠ No week selected";
+      statusDiv.style.color = "orange";
+      renderTable();
+    }
+  });
+
+  // ---------- realtime participants ----------
+  onSnapshot(collection(db, "seminar_participants"), snap=>{
+    participants = [];
+    snap.forEach(s => participants.push({ id: s.id, ...s.data() }));
+    renderTable();
+  });
+
+  // ---------- add user ----------
+  addUserBtn.addEventListener("click", async ()=>{
+    const newName = prompt("Enter new participant name:");
+    if(!newName) return;
+    try{
+      await addDoc(collection(db, "seminar_participants"), { name: newName });
+      statusDiv.textContent = `✅ Added ${newName}`;
+      statusDiv.style.color = "lightgreen";
+    }catch(err){
+      statusDiv.textContent = `❌ Error: ${err.message}`;
+      statusDiv.style.color = "red";
+    }
+  });
+</script>
+
+
+</body>
+</html>

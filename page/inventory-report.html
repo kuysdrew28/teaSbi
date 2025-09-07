@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/png" href="../img/logo2.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TSV Inventory Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+
+
+<!-- Link your custom JS file -->
+<script src="javascript/chatbot.js"></script>
+  <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/index.css">
+
+
+  <style>
+    body {
+      margin: 0;
+      background: #212529;
+      font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      color: #f5f5f5;
+    }
+    .container {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 16px;
+    }
+    h1 {
+      margin-bottom: 16px;
+      font-size: 22px;
+      color: #ff7b00;
+      font-weight: 700;
+      text-align: center;
+    }
+    .card {
+      background: #242424;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.6);
+      padding: 16px;
+      border: 1px solid rgba(255,123,0,0.2);
+    }
+    .search {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ff8c1a;
+      border-radius: 8px;
+      font: inherit;
+      background: #1a1a1a;
+      color: #f5f5f5;
+      outline: none;
+      transition: all .2s ease;
+    }
+    input:focus {
+      border-color: #ffa94d;
+      box-shadow: 0 0 6px rgba(255,140,26,0.6);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      color: #fffbfb;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: #2a2a2a;
+      color: #ffb366;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: .5px;
+    }
+    tr:hover {
+      background: rgba(255,123,0,0.05);
+    }
+    .status {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .ok {
+      background: rgba(46, 204, 113, 0.15);
+      color: #2ecc71;
+    }
+    .damaged {
+      background: rgba(231, 76, 60, 0.15);
+      color: #e74c3c;
+    }
+    .lost {
+      background: rgba(241, 196, 15, 0.15);
+      color: #f1c40f;
+    }
+    @media(max-width:720px){
+      th,td{font-size:12px;padding:8px}
+    }
+    footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div class="search">
+        <input id="filter" placeholder="Search equipment by name, category, or location" />
+      </div>
+      <div style="overflow:auto;max-height:480px">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Quantity</th><th>Category</th><th>Location</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain: "virac-tsv.firebaseapp.com",
+      projectId: "virac-tsv",
+      storageBucket: "virac-tsv.appspot.com",
+      messagingSenderId: "455316064834",
+      appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const tbody = document.getElementById('tbody');
+    const filterInput = document.getElementById('filter');
+    let latestDocs = [];
+
+    const colRef = collection(db, 'tsv-equipment');
+    const q = query(colRef, orderBy('name'));
+    onSnapshot(q, (snap)=>{
+      latestDocs = [];
+      snap.forEach(doc=> latestDocs.push({id: doc.id, ...doc.data()}));
+      render(latestDocs);
+    });
+
+    filterInput.addEventListener('input', ()=> render(latestDocs));
+
+    function render(items){
+      const term = filterInput.value.trim().toLowerCase();
+      const rows = items.filter(it=>{
+        if(!term) return true;
+        return (it.name||'').toLowerCase().includes(term) || (it.category||'').toLowerCase().includes(term) || (it.location||'').toLowerCase().includes(term);
+      }).map(it=>{
+        return `
+          <tr>
+            <td>${escapeHtml(it.name||'—')}</td>
+            <td>${it.qty||0}</td>
+            <td>${escapeHtml(it.category||'—')}</td>
+            <td>${escapeHtml(it.location||'—')}</td>
+            <td>${statusBadge(it.status||'OK')}</td>
+          </tr>`;
+      }).join('');
+      tbody.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#888;font-size:12px">No equipment found.</td></tr>';
+    }
+
+    function statusBadge(s){
+      const st = (s||'ok').toLowerCase();
+      if(st.includes('damage')) return `<span class="status damaged">Damaged</span>`;
+      if(st.includes('lost')) return `<span class="status lost">Lost</span>`;
+      return `<span class="status ok">OK</span>`;
+    }
+
+    function escapeHtml(str){return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+  </script>
+</body>
+</html>

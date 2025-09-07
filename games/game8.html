@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Partners</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --background-color: #1f2937; /* Tailwind's gray-800 */
+            --card-front-bg: #4b5563; /* Tailwind's gray-600 */
+            --card-back-bg: #3b82f6; /* Tailwind's blue-500 */
+            --text-color: #d1d5db; /* Tailwind's gray-300 */
+            --text-color-dark: #1f2937; /* Tailwind's gray-800 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 700px;
+            background-color: #111827; /* Tailwind's gray-900 */
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            width: 100%;
+        }
+
+        .card {
+            background-color: transparent;
+            height: 120px;
+            perspective: 1000px; /* 3D effect */
+            cursor: pointer;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 0.75rem;
+        }
+        
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.75rem;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .card-back {
+            background-color: var(--card-back-bg);
+            color: white;
+        }
+
+        .card-front {
+            background-color: var(--card-front-bg);
+            color: var(--text-color-dark);
+            transform: rotateY(180deg);
+            font-size: 2.5rem;
+        }
+        
+        .btn {
+            background-color: #10b981; /* Tailwind's emerald-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px #065f46; /* Tailwind's emerald-800 */
+            border: none;
+            margin-top: 2rem;
+        }
+
+        .btn:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+
+        #game-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            #game-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .card {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1 class="text-white">Tech Partners</h1>
+        <div id="game-message"></div>
+        <div id="game-board" class="hidden"></div>
+        <button id="startGameBtn" class="btn">Start Game</button>
+    </div>
+
+    <script>
+        // Data for the tech pairs. The "id" is used for matching.
+        const pairs = [
+            { id: 'mouse-keyboard', name: 'Mouse', partner: 'Keyboard', emoji: '🖱️', partnerEmoji: '⌨️' },
+            { id: 'hdmi-monitor', name: 'HDMI', partner: 'Monitor', emoji: '🔌', partnerEmoji: '🖥️' },
+            { id: 'mic-amplifier', name: 'Mic', partner: 'Amp', emoji: '🎤', partnerEmoji: '🔊' },
+            { id: 'cpu-motherboard', name: 'CPU', partner: 'Motherboard', emoji: '🧠', partnerEmoji: '⚙️' },
+            { id: 'router-internet', name: 'Router', partner: 'Internet', emoji: '📶', partnerEmoji: '🌐' },
+            { id: 'harddrive-data', name: 'Hard Drive', partner: 'Data', emoji: '💾', partnerEmoji: '📁' },
+            { id: 'camera-lens', name: 'Camera', partner: 'Lens', emoji: '📸', partnerEmoji: '🔎' },
+            { id: 'printer-paper', name: 'Printer', partner: 'Paper', emoji: '🖨️', partnerEmoji: '📄' }
+        ];
+
+        // --- Game State Variables ---
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let lockBoard = false;
+        
+        // --- DOM Elements ---
+        const gameBoard = document.getElementById('game-board');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const gameMessage = document.getElementById('game-message');
+
+        /**
+         * Shuffles an array using the Fisher-Yates (Knuth) algorithm.
+         * @param {Array} array The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Creates and renders the game board with shuffled cards.
+         */
+        function createBoard() {
+            // Create a single list of all card elements
+            const allCards = pairs.flatMap(pair => [
+                { type: 'item', id: pair.id, text: pair.name, emoji: pair.emoji },
+                { type: 'partner', id: pair.id, text: pair.partner, emoji: pair.partnerEmoji }
+            ]);
+
+            cards = shuffle(allCards);
+            
+            gameBoard.innerHTML = '';
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+                cardElement.dataset.type = card.type;
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back">?</div>
+                        <div class="card-face card-front">${card.text}<br>${card.emoji}</div>
+                    </div>
+                `;
+                cardElement.addEventListener('click', flipCard);
+                gameBoard.appendChild(cardElement);
+            });
+        }
+        
+        /**
+         * Handles the card flip logic when a card is clicked.
+         */
+        function flipCard() {
+            if (lockBoard || this === flippedCards[0]) return;
+
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                lockBoard = true;
+                checkForMatch();
+            }
+        }
+
+        /**
+         * Checks if the two flipped cards are a match.
+         */
+        function checkForMatch() {
+            const firstCard = flippedCards[0];
+            const secondCard = flippedCards[1];
+            
+            const isMatch = firstCard.dataset.id === secondCard.dataset.id;
+
+            if (isMatch) {
+                disableCards();
+                matchedPairs++;
+                if (matchedPairs === pairs.length) {
+                    endGame();
+                }
+            } else {
+                unflipCards();
+            }
+        }
+
+        /**
+         * Disables event listeners for matched cards.
+         */
+        function disableCards() {
+            flippedCards.forEach(card => card.removeEventListener('click', flipCard));
+            resetBoard();
+        }
+
+        /**
+         * Flips back non-matching cards after a delay.
+         */
+        function unflipCards() {
+            setTimeout(() => {
+                flippedCards.forEach(card => card.classList.remove('flipped'));
+                resetBoard();
+            }, 1000);
+        }
+
+        /**
+         * Resets the game state variables for the next turn.
+         */
+        function resetBoard() {
+            [flippedCards, lockBoard] = [[], false];
+        }
+
+        /**
+         * Starts the game, resetting all state.
+         */
+        function startGame() {
+            startGameBtn.classList.add('hidden');
+            gameBoard.classList.remove('hidden');
+            gameMessage.textContent = '';
+            matchedPairs = 0;
+            resetBoard();
+            createBoard();
+        }
+
+        /**
+         * Ends the game and displays a win message.
+         */
+        function endGame() {
+            gameMessage.textContent = 'You found all the tech partners! You win!';
+            startGameBtn.textContent = 'Play Again';
+            startGameBtn.classList.remove('hidden');
+        }
+
+        // --- Event Listeners ---
+        startGameBtn.addEventListener('click', startGame);
+
+    </script>
+</body>
+</html>

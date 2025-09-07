@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <title>TSV Officer Duty Dash</title>
+  <style>
+    :root{
+      --tsv-orange:#ff7300;
+      --bg:#111213; 
+      --card:#1b1c1f;
+      --text:#f3f3f3;
+      --muted:#a7a7a7;
+      --good:#29a36a;
+      --bad:#dc3545;
+      --warn:#ffb020;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 50% -200px, rgba(255,115,0,.15), transparent 60%), var(--bg);
+      color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .app{width:min(960px,100%); padding:16px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg,var(--tsv-orange),#ffb46b); display:grid; place-items:center; color:#111; font-weight:800}
+    h1{font-size:clamp(18px,3.6vw,28px); margin:0}
+    .sub{color:var(--muted); font-size:clamp(12px,2.6vw,14px)}
+
+    .panel{background:var(--card); border:1px solid #24262c; border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.3); padding:14px}
+
+    .hud{display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:8px; margin-bottom:12px}
+    .pill{background:#16171a; border:1px solid #23252b; border-radius:12px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:8px}
+    .pill strong{font-size:14px}
+    .value{font-weight:800}
+
+    .controls{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px}
+    button, select{appearance:none; border:none; outline:0}
+    .btn{background:var(--tsv-orange); color:#111; font-weight:800; padding:10px 14px; border-radius:12px; cursor:pointer; transition:transform .05s ease;}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:#24262c; color:var(--text); border:1px solid #333}
+    .btn.ghost{background:transparent; color:var(--text); border:1px dashed #444}
+    select{background:#1e2024; color:var(--text); border:1px solid #333; padding:10px 12px; border-radius:12px}
+    label{font-size:13px; color:var(--muted)}
+
+    .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px}
+    .cell{position:relative; aspect-ratio:1; border-radius:16px; overflow:hidden; background:#121317; border:1px solid #222}
+    .cell .hole{position:absolute; inset:0; display:grid; place-items:center; font-size:32px; color:#555}
+    .task{position:absolute; inset:6px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:10px; gap:6px; cursor:pointer; user-select:none; transform:translateY(12px); opacity:0; transition:opacity .15s, transform .15s;}
+    .task.show{opacity:1; transform:translateY(0)}
+    .task .title{font-weight:800; font-size:14px}
+    .task .badge{font-size:12px; color:#111; background:#ffd17b; padding:2px 8px; border-radius:999px}
+
+    .task.task-mic{background:linear-gradient(180deg, #222 0, #171717 100%); border:1px solid #373737}
+    .task.task-cam{background:linear-gradient(180deg, #21242b 0, #171a20 100%); border:1px solid #2b3340}
+    .task.task-stream{background:linear-gradient(180deg, #241f1b 0, #171311 100%); border:1px solid #3b2c22}
+    .task.task-cable{background:linear-gradient(180deg, #1f211e 0, #141613 100%); border:1px solid #2d3128}
+    .task.task-battery{background:linear-gradient(180deg, #221f23 0, #17141a 100%); border:1px solid #372e3d}
+    .task.task-obs{background:linear-gradient(180deg, #1c1c1c 0, #121212 100%); border:1px solid #2a2a2a}
+    .task.task-att{background:linear-gradient(180deg, #1e2124 0, #14171a 100%); border:1px solid #2c3136}
+
+    .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:18px; background:#202226; border:1px solid #2b2e34; color:#fff; padding:10px 14px; border-radius:12px; opacity:0; pointer-events:none}
+    .toast.show{opacity:1; animation:fade 1.8s ease forwards}
+    @keyframes fade{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
+
+    .muted{color:var(--muted)}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; background:#22252c; border:1px solid #2e3340; padding:2px 6px; border-radius:6px}
+
+    /* Responsive */
+    @media (max-width:600px){
+      .hud{grid-template-columns: repeat(2, minmax(0,1fr));}
+      .task .title{font-size:13px}
+      .task{inset:8px}
+    }
+    p {color: #111;}
+    li {color: #111;}
+  </style>
+</head>
+<body>
+    <!-- Bootstrap Modal -->
+<div class="modal fade" id="gameInstructions" tabindex="-1" aria-labelledby="instructionsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="instructionsLabel">TSV Officer Duty Dash 🎮</h5>
+      </div>
+      <div class="modal-body">
+        <p><strong>How to Play:</strong></p>
+        <ul>
+          <li>Click or press number keys (1–9) to complete tasks.</li>
+          <li>Don’t miss tasks — or you lose a life!</li>
+          <li>Each task = +1 point. Every 10 points = faster level.</li>
+          <li>3 lives total. Game over when lives run out.</li>
+        </ul>
+        <p class="fw-bold">Stay alert and keep the stream running! ✅</p>
+      </div>
+      <div class="modal-footer">
+        <button id="startGameBtn" class="btn btn-primary w-100">Start Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">TSV</div>
+        <div>
+          <h1>Officer Duty Dash</h1>
+          <div class="sub">Tap the tasks as they appear — keep the stream running! 🎥🎤</div>
+        </div>
+      </div>
+      <div>
+        <button id="aboutBtn" class="btn secondary" aria-label="How to play">How to Play</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="hud" role="status" aria-live="polite">
+        <div class="pill"><strong>Score</strong><span id="score" class="value">0</span></div>
+        <div class="pill"><strong>Lives</strong><span id="lives" class="value">3</span></div>
+        <div class="pill"><strong>Level</strong><span id="level" class="value">1</span></div>
+        <div class="pill"><strong>Best</strong><span id="best" class="value">0</span></div>
+      </div>
+
+      <div class="controls">
+        <button id="startBtn" class="btn" aria-label="Start game">Start</button>
+        <button id="pauseBtn" class="btn secondary" disabled aria-label="Pause game">Pause</button>
+        <button id="resetBtn" class="btn ghost" aria-label="Reset game">Reset</button>
+        <label>
+          Difficulty
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label>
+          <input id="soundToggle" type="checkbox" checked /> Sound
+        </label>
+      </div>
+
+      <div id="grid" class="grid" aria-label="Game grid of 9 stations"></div>
+
+      <p class="muted" style="margin-top:10px">Tip: You can also press keys <span class="kbd">1</span>–<span class="kbd">9</span> to hit cells. Layout maps left→right, top→bottom.</p>
+    </section>
+
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+  </div>
+
+  <script>
+
+      // Show modal on page load
+  window.onload = () => {
+    const modal = new bootstrap.Modal(document.getElementById('gameInstructions'));
+    modal.show();
+
+    // When clicking Start Game → begin
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+      modal.hide();
+      startGame(); // <-- call your existing startGame() function
+    });
+  };
+    // ====== Data & Setup ======
+    const gridEl = document.getElementById('grid');
+    const scoreEl = document.getElementById('score');
+    const livesEl = document.getElementById('lives');
+    const levelEl = document.getElementById('level');
+    const bestEl = document.getElementById('best');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const diffSel = document.getElementById('difficulty');
+    const soundToggle = document.getElementById('soundToggle');
+    const aboutBtn = document.getElementById('aboutBtn');
+    const toast = document.getElementById('toast');
+
+    const tasks = [
+      { key:'mic',     label:'Check Mic',         icon:'\uD83C\uDFA4', badge:'Audio',    class:'task-mic' },
+      { key:'cam',     label:'Setup Camera',      icon:'\uD83D\uDCF7', badge:'Video',    class:'task-cam' },
+      { key:'stream',  label:'Start Stream',      icon:'\uD83D\uDD34', badge:'Live',     class:'task-stream' },
+      { key:'cable',   label:'Fix Cable',         icon:'\uD83D\uDD27', badge:'Tech',     class:'task-cable' },
+      { key:'battery', label:'Replace Battery',   icon:'\uD83D\uDD0B', badge:'Power',    class:'task-battery' },
+      { key:'obs',     label:'Switch Scene',      icon:'\uD83D\uDD79\uFE0F', badge:'OBS', class:'task-obs' },
+      { key:'att',     label:'Mark Attendance',   icon:'\u2705',       badge:'Admin',    class:'task-att' },
+    ];
+
+    const state = {
+      running:false,
+      paused:false,
+      score:0,
+      lives:3,
+      level:1,
+      cells:[],
+      active: new Map(), // cellIndex -> timeoutId
+      spawnTimer:null,
+      tick:0,
+      cfg: {
+        spawnEvery: 900,     // ms between spawns (will change by difficulty)
+        visibleFor: 1400,    // ms a task stays visible
+        maxConcurrent: 1,
+      }
+    };
+
+    const bestKey = (d)=>`tsv-duty-dash-best-${d}`;
+
+    function loadBest(){
+      bestEl.textContent = Number(localStorage.getItem(bestKey(diffSel.value)) || 0);
+    }
+
+    function saveBest(){
+      const k = bestKey(diffSel.value);
+      const prev = Number(localStorage.getItem(k) || 0);
+      if (state.score > prev){ localStorage.setItem(k, String(state.score)); }
+      loadBest();
+    }
+
+    function setDifficulty(d){
+      if (d==='easy'){ state.cfg.spawnEvery = 1050; state.cfg.visibleFor = 1700; state.cfg.maxConcurrent = 1; state.lives = 4; }
+      else if (d==='hard'){ state.cfg.spawnEvery = 700; state.cfg.visibleFor = 1200; state.cfg.maxConcurrent = 2; state.lives = 3; }
+      else { // normal
+        state.cfg.spawnEvery = 900; state.cfg.visibleFor = 1400; state.cfg.maxConcurrent = 1; state.lives = 3;
+      }
+      livesEl.textContent = state.lives;
+    }
+
+    // Build grid
+    function buildGrid(){
+      gridEl.innerHTML = '';
+      state.cells = Array.from({length:9}).map((_,i)=>{
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        const hole = document.createElement('div');
+        hole.className = 'hole';
+        hole.textContent = ['\u25A1','\u25A0','\u25A3'][i%3];
+        cell.appendChild(hole);
+        gridEl.appendChild(cell);
+        return cell;
+      });
+    }
+
+    // ====== Audio (simple beep) ======
+    let audioCtx = null;
+    function beep(freq=880, dur=0.06){
+      if (!soundToggle.checked) return;
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.frequency.value = freq; o.type='square';
+      g.gain.setValueAtTime(0.14, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur);
+    }
+
+    // ====== Game Flow ======
+    function toastMsg(msg){
+      toast.textContent = msg; toast.classList.remove('show');
+      void toast.offsetWidth; // reflow
+      toast.classList.add('show');
+    }
+
+    function start(){
+      if (state.running && !state.paused) return;
+      if (!state.running){ reset(true); }
+      state.running = true; state.paused = false;
+      pauseBtn.disabled = false; startBtn.textContent = 'Resume';
+      scheduleSpawn();
+      toastMsg('Go! Handle the tasks.');
+    }
+
+    function pause(){
+      if (!state.running) return;
+      state.paused = !state.paused;
+      if (state.paused){ clearInterval(state.spawnTimer); state.active.forEach(t=>clearTimeout(t)); toastMsg('Paused'); }
+      else { scheduleSpawn(); toastMsg('Resumed'); }
+    }
+
+    function reset(keepDifficulty=false){
+      clearInterval(state.spawnTimer); state.active.forEach(t=>clearTimeout(t)); state.active.clear();
+      state.running=false; state.paused=false; state.score=0; state.level=1; state.tick=0;
+      scoreEl.textContent = '0'; levelEl.textContent='1';
+      if (!keepDifficulty) setDifficulty(diffSel.value); else livesEl.textContent = state.lives;
+      // Cleanup tasks
+      state.cells.forEach(c=>{ const t=c.querySelector('.task'); if (t) t.remove(); });
+      startBtn.textContent='Start'; pauseBtn.disabled=true;
+    }
+
+    function gameOver(){
+      saveBest();
+      state.running=false; state.paused=false; clearInterval(state.spawnTimer);
+      toastMsg(`Game Over – Score ${state.score}`);
+      startBtn.textContent='Start'; pauseBtn.disabled=true;
+    }
+
+    function addScore(n=1){ state.score+=n; scoreEl.textContent = state.score; levelUpCheck(); }
+
+    function loseLife(n=1){
+      state.lives = Math.max(0, state.lives - n); livesEl.textContent = state.lives; beep(180, .08);
+      flash(document.body, '--bad');
+      if (state.lives<=0) gameOver();
+    }
+
+    function levelUpCheck(){
+      const next = 1 + Math.floor(state.score/10);
+      if (next !== state.level){
+        state.level = next; levelEl.textContent = next;
+        // speed up subtly
+        state.cfg.spawnEvery = Math.max(480, state.cfg.spawnEvery - 40);
+        state.cfg.visibleFor = Math.max(800, state.cfg.visibleFor - 20);
+        toastMsg(`Level ${next}!`);
+      }
+    }
+
+    function flash(node, colorVar){
+      const prev = node.style.boxShadow;
+      node.style.boxShadow = `0 0 0 9999px rgba(0,0,0,0) inset, 0 0 24px var(${colorVar})`;
+      setTimeout(()=> node.style.boxShadow = prev, 120);
+    }
+
+    function scheduleSpawn(){
+      clearInterval(state.spawnTimer);
+      state.spawnTimer = setInterval(()=>{
+        if (!state.running || state.paused) return;
+        state.tick++;
+        spawnBatch();
+      }, state.cfg.spawnEvery);
+    }
+
+    function pickCells(n){
+      const idx = [...Array(state.cells.length).keys()].filter(i=>!state.active.has(i));
+      shuffle(idx); return idx.slice(0, n);
+    }
+
+    function spawnBatch(){
+      const slots = pickCells(state.cfg.maxConcurrent);
+      for (const i of slots){ spawnTask(i); }
+    }
+
+    function spawnTask(cellIndex){
+      const cell = state.cells[cellIndex];
+      const task = tasks[Math.floor(Math.random()*tasks.length)];
+      const el = document.createElement('div');
+      el.className = `task ${task.class}`;
+      el.innerHTML = `<div class="badge">${task.badge}</div><div class="title">${task.icon} ${task.label}</div>`;
+      el.setAttribute('role','button');
+      el.setAttribute('aria-label', task.label);
+      el.addEventListener('click', ()=> hit(cellIndex, el));
+      cell.appendChild(el);
+      requestAnimationFrame(()=> el.classList.add('show'));
+
+      beep(660, .05);
+      const to = setTimeout(()=> miss(cellIndex, el), state.cfg.visibleFor);
+      state.active.set(cellIndex, to);
+    }
+
+    function hit(cellIndex, el){
+      if (!state.active.has(cellIndex)) return; // already handled
+      clearTimeout(state.active.get(cellIndex)); state.active.delete(cellIndex);
+      addScore(1); beep(980, .06);
+      el.style.transform='scale(.92)'; el.style.opacity='.2';
+      setTimeout(()=> el.remove(), 80);
+    }
+
+    function miss(cellIndex, el){
+      if (!state.active.has(cellIndex)) return;
+      state.active.delete(cellIndex);
+      el.classList.remove('show');
+      setTimeout(()=> el.remove(), 120);
+      loseLife(1);
+    }
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+
+    // Keyboard mapping 1..9 => cells
+    window.addEventListener('keydown', (e)=>{
+      if (e.key>='1' && e.key<='9'){
+        const i = Number(e.key)-1; const cell = state.cells[i]; if (!cell) return;
+        const taskEl = cell.querySelector('.task');
+        if (taskEl) taskEl.click(); else flash(cell, '--warn');
+      }
+      if (e.key===' '){ e.preventDefault(); start(); }
+      if (e.key.toLowerCase()==='p'){ pause(); }
+      if (e.key.toLowerCase()==='r'){ reset(true); }
+    });
+
+    // UI events
+    startBtn.addEventListener('click', start);
+    pauseBtn.addEventListener('click', ()=>{ pause(); });
+    resetBtn.addEventListener('click', ()=>{ saveBest(); reset(); loadBest(); });
+    diffSel.addEventListener('change', ()=>{ saveBest(); setDifficulty(diffSel.value); reset(true); loadBest(); });
+    aboutBtn.addEventListener('click', ()=>{
+      alert(
+`How to Play – TSV Officer Duty Dash\n\n`
++ `• Tap tasks as they pop up (or press 1–9).\n`
++ `• Each hit scores +1. Missing a task costs a life.\n`
++ `• Levels increase as your score rises; tasks appear faster.\n`
++ `• Choose a difficulty, toggle sound, and chase the Best score!\n\n`
++ `The tasks reflect common TSV duties: checking mics, setting up cameras, starting the livestream, fixing cables, switching OBS scenes, replacing batteries, and marking attendance.`
+      );
+    });
+
+    // Init
+    buildGrid(); setDifficulty(diffSel.value); loadBest();
+  </script>
+</body>
+</html>

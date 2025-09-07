@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
+            --background-color: #0b111a; /* Dark blue-gray */
+            --terminal-bg: #111827; /* Tailwind's gray-900 */
+            --text-color: #10b981; /* Tailwind's emerald-500 for a hacking vibe */
+            --glow-color: rgba(16, 185, 129, 0.4);
+            --input-bg: #1f2937; /* Tailwind's gray-800 */
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--terminal-bg);
+            border-radius: 1.5rem;
+            box-shadow: 0 0 40px var(--glow-color);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #d1d5db;
+            text-shadow: 0 0 10px var(--glow-color);
+            margin-bottom: 2rem;
+            letter-spacing: 0.1em;
+        }
+
+        #console {
+            width: 100%;
+            min-height: 300px;
+            background-color: transparent;
+            border: 2px solid var(--text-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-size: 1rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            box-shadow: inset 0 0 10px var(--glow-color);
+        }
+
+        #input-container {
+            display: flex;
+            width: 100%;
+            margin-top: 1.5rem;
+            gap: 1rem;
+        }
+
+        #guess-input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid var(--text-color);
+            background-color: var(--input-bg);
+            color: white;
+            font-family: 'Roboto Mono', monospace;
+            outline: none;
+            box-shadow: 0 0 5px var(--glow-color);
+            transition: box-shadow 0.2s;
+        }
+
+        #guess-input:focus {
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+        
+        .btn {
+            background-color: var(--text-color);
+            color: var(--terminal-bg);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        
+        #submit-btn:hover {
+            background-color: #059669; /* Darker emerald */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px var(--glow-color);
+        }
+
+        #start-btn {
+            background-color: #f59e0b; /* Tailwind's amber-500 */
+            color: white;
+            font-size: 1.25rem;
+            padding: 1rem 2rem;
+            margin-top: 2rem;
+        }
+        
+        #start-btn:hover {
+            background-color: #d97706; /* Darker amber */
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>PASSWORD PROTOCOL</h1>
+
+        <div id="game-start-screen" class="w-full text-center">
+            <p class="text-lg text-gray-400">
+                Welcome to the network. Your mission is to guess the password before your attempts run out.
+                You will be given a hint for each round.
+            </p>
+            <button id="start-btn" class="btn">Start Simulation</button>
+        </div>
+
+        <div id="game-play-screen" class="w-full hidden">
+            <div id="console" class="text-sm"></div>
+            <div id="input-container">
+                <input type="text" id="guess-input" placeholder="Type your guess...">
+                <button id="submit-btn" class="btn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const passwords = [
+            { password: "password", hint: "A very common word, not very secure." },
+            { password: "firewall", hint: "Protects a network from unauthorized access." },
+            { password: "motherboard", hint: "The main circuit board of a computer." },
+            { password: "javascript", hint: "A programming language for web pages." },
+            { password: "processor", hint: "The 'brain' of the computer." },
+            { password: "ethernet", hint: "A common type of wired network cable." },
+            { password: "bluetooth", hint: "A wireless technology for short distances." },
+            { password: "ssd", hint: "A fast storage device with no moving parts." },
+        ];
+
+        // --- Game State Variables ---
+        let currentPassword = '';
+        let attempts = 5;
+        let gameActive = false;
+        
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('game-start-screen');
+        const playScreen = document.getElementById('game-play-screen');
+        const consoleEl = document.getElementById('console');
+        const guessInput = document.getElementById('guess-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const startBtn = document.getElementById('start-btn');
+
+        /**
+         * Simulates text being typed into the console.
+         * @param {string} text The text to display.
+         * @returns {Promise<void>} A promise that resolves when the text is fully displayed.
+         */
+        function typeWriterEffect(text) {
+            return new Promise(resolve => {
+                let i = 0;
+                const speed = 20; // typing speed in ms
+                function type() {
+                    if (i < text.length) {
+                        consoleEl.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+        /**
+         * Clears the console and starts a new line.
+         */
+        function newLine() {
+            consoleEl.textContent = '';
+            consoleEl.textContent += '>';
+        }
+
+        /**
+         * Starts the game, picking a new password and resetting attempts.
+         */
+        async function startGame() {
+            gameActive = true;
+            attempts = 5;
+            startScreen.classList.add('hidden');
+            playScreen.classList.remove('hidden');
+            
+            const selectedPair = passwords[Math.floor(Math.random() * passwords.length)];
+            currentPassword = selectedPair.password;
+            
+            newLine();
+            await typeWriterEffect(`...CONNECTION ESTABLISHED...\n`);
+            await typeWriterEffect(`ACCESS DENIED. PLEASE ENTER PASSWORD.\n`);
+            await typeWriterEffect(`HINT: ${selectedPair.hint}\n`);
+            await typeWriterEffect(`ATTEMPTS REMAINING: ${attempts}`);
+            
+            guessInput.focus();
+        }
+
+        /**
+         * Checks the user's guess against the current password.
+         */
+        async function checkPassword() {
+            if (!gameActive) return;
+
+            const userGuess = guessInput.value.trim().toLowerCase();
+            guessInput.value = ''; // Clear input field
+
+            newLine();
+            await typeWriterEffect(`INPUT: ${userGuess}\n`);
+
+            if (userGuess === currentPassword) {
+                await typeWriterEffect(`ACCESS GRANTED. PROTOCOL SUCCESSFUL.\n`);
+                await typeWriterEffect(`PASSWORD: ${currentPassword}\n`);
+                endGame(true);
+            } else {
+                attempts--;
+                await typeWriterEffect(`ACCESS DENIED. INCORRECT PASSWORD.\n`);
+                if (attempts > 0) {
+                    await typeWriterEffect(`ATTEMPTS REMAINING: ${attempts}`);
+                } else {
+                    await typeWriterEffect(`ATTEMPTS REMAINING: 0\n`);
+                    await typeWriterEffect(`ACCESS REVOKED. SIMULATION TERMINATED.\n`);
+                    endGame(false);
+                }
+            }
+        }
+        
+        /**
+         * Ends the game and displays the result.
+         * @param {boolean} win True if the user won, false otherwise.
+         */
+        async function endGame(win) {
+            gameActive = false;
+            await new Promise(r => setTimeout(r, 1500));
+            consoleEl.textContent = '';
+            if (win) {
+                await typeWriterEffect(`YOU WIN!`);
+            } else {
+                await typeWriterEffect(`GAME OVER!`);
+                await typeWriterEffect(`\nThe correct password was: ${currentPassword}`);
+            }
+            startBtn.textContent = 'Play Again';
+            startScreen.classList.remove('hidden');
+            playScreen.classList.add('hidden');
+        }
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startGame);
+        submitBtn.addEventListener('click', checkPassword);
+        guessInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+    </script>
+</body>
+</html>

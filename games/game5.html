@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyber City Runner</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: black;
+      color: #0ff;
+      text-align: center;
+    }
+    #gameCanvas {
+      background: linear-gradient(to top, #020202, #0a0f23);
+      display: block;
+      margin: auto;
+      border: 2px solid #0ff;
+    }
+    #startScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #startScreen h1 {
+      font-size: 2.5em;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+    }
+    #startButton {
+      padding: 15px 30px;
+      margin-top: 20px;
+      background: #0ff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: black;
+      font-weight: bold;
+      box-shadow: 0 0 15px #0ff;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      z-index: 5;
+    }
+    .btn {
+      padding: 15px 25px;
+      background: rgba(0, 255, 255, 0.2);
+      border: 2px solid #0ff;
+      border-radius: 12px;
+      font-size: 1em;
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+      box-shadow: 0 0 10px #0ff;
+      cursor: pointer;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <h1>Cyber City Runner</h1>
+    <button id="startButton">Start Game</button>
+  </div>
+  <canvas id="gameCanvas" width="480" height="320"></canvas>
+  <div id="controls">
+    <button class="btn" id="jumpBtn">Jump</button>
+    <button class="btn" id="dashBtn">Dash</button>
+    <button class="btn" id="pauseBtn">Pause</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let player = { x: 50, y: 250, width: 40, height: 40, dy: 0, gravity: 1, jumpPower: -15, grounded: false };
+    let obstacles = [];
+    let score = 0;
+    let bestScore = localStorage.getItem("bestScore") || 0;
+    let gameInterval;
+    let isPaused = false;
+
+    function drawPlayer() {
+      ctx.fillStyle = "#0ff";
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = "#0ff";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+      ctx.shadowBlur = 0;
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "#f0f";
+      obstacles.forEach(o => {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#f0f";
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    function updatePlayer() {
+      player.y += player.dy;
+      if (!player.grounded) player.dy += player.gravity;
+
+      if (player.y + player.height >= canvas.height - 20) {
+        player.y = canvas.height - player.height - 20;
+        player.dy = 0;
+        player.grounded = true;
+      } else {
+        player.grounded = false;
+      }
+    }
+
+    function spawnObstacle() {
+      let size = Math.random() * 20 + 20;
+      obstacles.push({ x: canvas.width, y: canvas.height - size - 20, width: size, height: size });
+    }
+
+    function updateObstacles() {
+      obstacles.forEach(o => { o.x -= 5; });
+      obstacles = obstacles.filter(o => o.x + o.width > 0);
+
+      if (Math.random() < 0.02) spawnObstacle();
+    }
+
+    function detectCollision() {
+      for (let o of obstacles) {
+        if (player.x < o.x + o.width && player.x + player.width > o.x && player.y < o.y + o.height && player.y + player.height > o.y) {
+          gameOver();
+        }
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#0ff";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 30);
+      ctx.fillText("Best: " + bestScore, 10, 60);
+    }
+
+    function gameLoop() {
+      if (isPaused) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      updateObstacles();
+      detectCollision();
+      drawPlayer();
+      drawObstacles();
+      drawScore();
+
+      score++;
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem("bestScore", bestScore);
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function gameOver() {
+      alert("Game Over! Your Score: " + score);
+      obstacles = [];
+      score = 0;
+      player.y = canvas.height - player.height - 20;
+      player.dy = 0;
+      startScreen.style.display = "flex";
+    }
+
+    // ✅ Fix start screen hiding
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
+
+    startButton.addEventListener("click", () => {
+      startScreen.style.display = "none"; // Hide immediately
+      startGame();
+    });
+
+    function startGame() {
+      isPaused = false;
+      score = 0;
+      obstacles = [];
+      player.y = canvas.height - player.height - 20;
+      gameLoop();
+    }
+
+    // Controls
+    document.getElementById("jumpBtn").addEventListener("click", () => {
+      if (player.grounded) {
+        player.dy = player.jumpPower;
+        player.grounded = false;
+      }
+    });
+
+    document.getElementById("dashBtn").addEventListener("click", () => {
+      player.x += 30;
+      setTimeout(() => player.x -= 30, 200);
+    });
+
+    document.getElementById("pauseBtn").addEventListener("click", () => {
+      isPaused = !isPaused;
+      if (!isPaused) gameLoop();
+    });
+
+    // Keyboard controls
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && player.grounded) {
+        player.dy = player.jumpPower;
+        player.grounded = false;
+      }
+      if (e.code === "ArrowRight") {
+        player.x += 30;
+        setTimeout(() => player.x -= 30, 200);
+      }
+      if (e.code === "KeyP") {
+        isPaused = !isPaused;
+        if (!isPaused) gameLoop();
+      }
+    });
+  </script>
+</body>
+</html>

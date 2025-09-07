@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Troubleshoot Mini-Games</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f7f9fc; }
+    .game-card { min-height:320px; }
+    .dropzone { background:#fff; border:2px dashed #dee2e6; padding:12px; min-height:60px; border-radius:8px; }
+    .draggable { cursor:grab; padding:8px 10px; border-radius:6px; margin:6px 0; background:#e9f5ff; border:1px solid #cfeeff; }
+    .correct { border-color:#28a745 !important; background:#e6f7ec !important; }
+    .incorrect { border-color:#dc3545 !important; background:#fdecea !important; }
+    .hidden { display:none !important; }
+    .scenario { margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="m-0">Troubleshoot Mini-Games</h3>
+      <div>
+        <button class="btn btn-sm btn-outline-primary" id="showMatching">Match</button>
+        <button class="btn btn-sm btn-outline-primary" id="showFixIt">Fix It Fast</button>
+        <button class="btn btn-sm btn-outline-primary" id="showHelpdesk">Helpdesk</button>
+      </div>
+    </div>
+
+    <!-- Matching Game -->
+    <div id="matching" class="card game-card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Drag & Drop — Match Problem to Best Fix</h5>
+        <p class="text-muted">Drag the solution to the matching problem. When all matched, click <strong>Check Answers</strong>.</p>
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Problems</h6>
+            <div id="problems" class="list-group">
+              <!-- zones -->
+              <div class="mb-2">
+                <div class="fw-bold">No Signal (TV)</div>
+                <div data-id="hdmi" class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+              </div>
+
+              <div class="mb-2">
+                <div class="fw-bold">No Sound (Amplifier)</div>
+                <div data-id="amp" class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+              </div>
+
+              <div class="mb-2">
+                <div class="fw-bold">Internet Slow</div>
+                <div data-id="internet" class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+              </div>
+
+              <div class="mb-2">
+                <div class="fw-bold">Computer Not Turning On</div>
+                <div data-id="power" class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <h6>Solutions</h6>
+            <div id="solutions" class="mt-1">
+              <div id="s1" draggable="true" ondragstart="drag(event)" class="draggable">Check HDMI cable and input source</div>
+              <div id="s2" draggable="true" ondragstart="drag(event)" class="draggable">Restart router / close heavy downloads</div>
+              <div id="s3" draggable="true" ondragstart="drag(event)" class="draggable">Ensure power cable and PSU switch are on</div>
+              <div id="s4" draggable="true" ondragstart="drag(event)" class="draggable">Verify input selection, speaker wires and volume</div>
+            </div>
+            <div class="mt-3">
+              <button class="btn btn-success btn-sm" onclick="checkMatches()">Check Answers</button>
+              <button class="btn btn-secondary btn-sm" onclick="resetMatching()">Reset</button>
+              <div id="matchResult" class="mt-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fix It Fast -->
+    <div id="fixit" class="card game-card mb-3 hidden">
+      <div class="card-body">
+        <h5 class="card-title">Fix It Fast — Time Challenge</h5>
+        <p class="text-muted">Answer as many quick troubleshooting questions correctly within the timer.</p>
+        <div class="d-flex align-items-center mb-2">
+          <div class="me-3"><strong>Time left:</strong> <span id="timer">30</span>s</div>
+          <button class="btn btn-sm btn-primary me-2" onclick="startFixIt()">Start</button>
+          <button class="btn btn-sm btn-secondary" onclick="resetFixIt()">Reset</button>
+          <div class="ms-auto">Score: <span id="fixScore">0</span></div>
+        </div>
+        <div id="fixQuestionArea">
+          <div id="fixQuestion" class="mb-3 fw-bold">Press Start to begin.</div>
+          <div id="fixChoices"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Helpdesk -->
+    <div id="helpdesk" class="card game-card mb-3 hidden">
+      <div class="card-body">
+        <h5 class="card-title">Helpdesk Role-Play</h5>
+        <p class="text-muted">Select best steps to solve the user's issue. Earn satisfaction points.</p>
+        <div id="scenarioArea"></div>
+        <div class="mt-3">
+          <button class="btn btn-sm btn-primary" onclick="nextScenario()">Next Scenario</button>
+          <button class="btn btn-sm btn-secondary" onclick="resetHelpdesk()">Reset</button>
+          <div class="float-end">Satisfaction: <span id="helpScore">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center text-muted small mt-3">Built for classroom practice — lightweight, mobile-friendly</footer>
+  </div>
+
+<script>
+// --- Matching logic ---
+let draggedId = null;
+function drag(ev) { draggedId = ev.target.id; }
+function allowDrop(ev) { ev.preventDefault(); }
+function drop(ev) {
+  ev.preventDefault();
+  const zone = ev.currentTarget;
+  // remove existing child solution if present back to pool
+  if (zone.dataset.hasOwnProperty('filled') && zone.dataset.filled) {
+    // move previous back
+    const prev = document.getElementById(zone.dataset.filledId);
+    if (prev) document.getElementById('solutions').appendChild(prev);
+  }
+  zone.innerHTML = '';
+  const el = document.getElementById(draggedId);
+  zone.appendChild(el);
+  zone.dataset.filled = true;
+  zone.dataset.filledId = draggedId;
+}
+
+function checkMatches(){
+  const map = { 'hdmi':'s1', 'internet':'s2', 'power':'s3', 'amp':'s4' };
+  let correct = 0, total = 0;
+  document.querySelectorAll('.dropzone').forEach(z => {
+    total++;
+    const expected = map[z.dataset.id];
+    const child = z.querySelector('.draggable');
+    if (child && child.id === expected){
+      child.classList.add('correct'); correct++;
+    } else if (child) {
+      child.classList.add('incorrect');
+    }
+  });
+  const res = document.getElementById('matchResult');
+  res.innerHTML = `<div class='alert alert-${correct===total? 'success':'warning'} py-1'>Score: ${correct}/${total}</div>`;
+}
+function resetMatching(){
+  // move all draggables back
+  document.querySelectorAll('.draggable').forEach(d => document.getElementById('solutions').appendChild(d));
+  document.querySelectorAll('.dropzone').forEach(z => { z.innerHTML=''; z.dataset.filled=false; z.dataset.filledId=''; });
+  document.getElementById('matchResult').innerHTML='';
+  document.querySelectorAll('.draggable').forEach(d=>{ d.classList.remove('correct','incorrect'); });
+}
+
+// --- UI toggles ---
+document.getElementById('showMatching').addEventListener('click', ()=>{ show('matching'); });
+document.getElementById('showFixIt').addEventListener('click', ()=>{ show('fixit'); });
+document.getElementById('showHelpdesk').addEventListener('click', ()=>{ show('helpdesk'); });
+function show(id){ ['matching','fixit','helpdesk'].forEach(x=> document.getElementById(x).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+// --- Fix It Fast logic ---
+const fixPool = [
+  {q:'TV shows "No Signal" after connecting HDMI. First step?', choices:['Replace TV','Check HDMI cable and input','Buy a new HDMI splitter'], a:1},
+  {q:'Amplifier has buzzing noise. Best first action?', choices:['Ignore it','Check cables and grounding','Replace speakers immediately'], a:1},
+  {q:'Wi-Fi is slow only at night. What to try first?', choices:['Upgrade ISP plan','Restart router and check bandwidth hogs','Replace router antenna'], a:1},
+  {q:'Computer does not boot, fans spin but no display. First step?', choices:['Check monitor cable & power','Throw away the computer','Reinstall OS'], a:0}
+];
+let fixTimer, fixTime=30, fixScore=0, fixCurrent=null;
+function startFixIt(){ resetFixIt(); fixTime=30; document.getElementById('timer').textContent=fixTime; fixScore=0; document.getElementById('fixScore').textContent=fixScore; nextFixQuestion(); fixTimer=setInterval(()=>{ fixTime--; document.getElementById('timer').textContent=fixTime; if (fixTime<=0){ clearInterval(fixTimer); endFixIt(); } },1000); }
+function resetFixIt(){ clearInterval(fixTimer); fixTime=30; document.getElementById('timer').textContent=fixTime; fixScore=0; document.getElementById('fixScore').textContent=fixScore; document.getElementById('fixQuestion').textContent='Press Start to begin.'; document.getElementById('fixChoices').innerHTML=''; }
+function nextFixQuestion(){ if (fixTime<=0) return; fixCurrent = fixPool[Math.floor(Math.random()*fixPool.length)]; document.getElementById('fixQuestion').textContent = fixCurrent.q; const cdiv = document.getElementById('fixChoices'); cdiv.innerHTML=''; fixCurrent.choices.forEach((ch,i)=>{ const b = document.createElement('button'); b.className='btn btn-outline-primary btn-sm m-1'; b.textContent=ch; b.onclick = ()=>{ if (i===fixCurrent.a){ fixScore+=10; document.getElementById('fixScore').textContent=fixScore; } else { fixScore-=3; document.getElementById('fixScore').textContent=fixScore; }
+ nextFixQuestion(); } ; cdiv.appendChild(b); }); }
+function endFixIt(){ document.getElementById('fixQuestion').textContent='Time up! Final Score: '+fixScore; document.getElementById('fixChoices').innerHTML=''; }
+
+// --- Helpdesk logic ---
+const scenarios = [
+  {msg:'User: "Walang tunog ang amplifier ko kahit naka-on."', options:['Check volume/mute & input','Replace amplifier','Unplug speakers permanently'], correct:0},
+  {msg:'User: "My laptop shows black screen after sleep."', options:['Tell them to force shutdown and check display cable','Upgrade to a new laptop immediately','Change the keyboard'], correct:0},
+  {msg:'User: "Internet keeps disconnecting every hour."', options:['Ask to restart modem and check firmware','Suggest using dial-up','Advise to buy random cables'], correct:0},
+  {msg:'User: "TV says No Signal after connecting game console."', options:['Confirm HDMI input & cable and try another port','Advise to buy a new TV','Tell them to press random buttons'], correct:0}
+];
+let helpIndex=0, helpScore=0;
+function loadScenario(){ const area=document.getElementById('scenarioArea'); area.innerHTML=''; const s = scenarios[helpIndex]; const card = document.createElement('div'); card.className='p-2 border rounded bg-white'; card.innerHTML = `<div class='fw-bold mb-2'>${s.msg}</div>`;
+ s.options.forEach((opt,i)=>{ const b = document.createElement('button'); b.className='btn btn-outline-secondary btn-sm m-1'; b.textContent=opt; b.onclick = ()=>{ if (i===s.correct){ helpScore+=5; document.getElementById('helpScore').textContent=helpScore; b.classList.add('btn-success'); } else { helpScore-=2; document.getElementById('helpScore').textContent=helpScore; b.classList.add('btn-danger'); } // show explanation
+ const expl = document.createElement('div'); expl.className='mt-2 small text-muted'; expl.textContent = i===s.correct ? 'Good choice — start with simple checks before replacing hardware.' : 'Not the best first step — try verifying connections and settings first.'; card.appendChild(expl);
+ // disable other buttons
+ Array.from(card.querySelectorAll('button')).forEach(bb=>bb.disabled=true);
+ } ; card.appendChild(b); });
+ area.appendChild(card);
+}
+function nextScenario(){ helpIndex = (helpIndex+1) % scenarios.length; loadScenario(); }
+function resetHelpdesk(){ helpIndex=0; helpScore=0; document.getElementById('helpScore').textContent=helpScore; loadScenario(); }
+// initialize
+resetMatching(); resetFixIt(); resetHelpdesk(); show('matching');
+</script>
+</body>
+</html>

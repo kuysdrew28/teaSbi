@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Sorter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --background-color: #1f2937; /* Tailwind's gray-800 */
+            --game-bg: #111827; /* Tailwind's gray-900 */
+            --text-color: #d1d5db; /* Tailwind's gray-300 */
+            --correct-color: #10b981; /* Tailwind's emerald-500 */
+            --incorrect-color: #ef4444; /* Tailwind's red-500 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--game-bg);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        
+        #game-area {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #374151; /* Tailwind's gray-700 */
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .file {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .file.active {
+            transform: translateY(0);
+        }
+
+        .file.missed {
+            background-color: var(--incorrect-color);
+        }
+
+        #folders-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .folder-btn {
+            background-color: #2563eb; /* Tailwind's blue-700 */
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .folder-btn:hover {
+            background-color: #1d4ed8; /* Tailwind's blue-800 */
+            transform: translateY(-2px);
+        }
+        
+        .folder-btn .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn {
+            background-color: var(--correct-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px #065f46;
+            border: none;
+            margin-top: 2rem;
+        }
+
+        .btn:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+
+        #message-box {
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 2rem;
+            margin-top: 1rem;
+        }
+        
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Data Sorter</h1>
+
+        <div id="start-screen">
+            <p class="text-lg text-gray-400 mb-6">
+                Sort the incoming data files into their correct folders before time runs out!
+            </p>
+            <button id="startGameBtn" class="btn">Start Game</button>
+        </div>
+
+        <div id="game-play-screen" class="hidden w-full">
+            <div class="info-panel">
+                <span>Score: <span id="score">0</span></span>
+                <span>Time: <span id="timer">60</span>s</span>
+            </div>
+    
+            <div id="game-area"></div>
+    
+            <div id="message-box"></div>
+    
+            <div id="folders-container">
+                <button id="docs-folder" class="folder-btn" data-type="docs">
+                    <span class="emoji">📁</span>Docs
+                </button>
+                <button id="media-folder" class="folder-btn" data-type="media">
+                    <span class="emoji">🖼️</span>Media
+                </button>
+                <button id="code-folder" class="folder-btn" data-type="code">
+                    <span class="emoji">💻</span>Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const fileTypes = [
+            { type: 'docs', emoji: '📄', color: '#dcfce7' }, // green-100
+            { type: 'media', emoji: '🎬', color: '#e0f2fe' }, // blue-100
+            { type: 'code', emoji: '📈', color: '#fef3c7' }  // yellow-100
+        ];
+
+        // --- Game State Variables ---
+        let score = 0;
+        let timer = 60;
+        let gameActive = false;
+        let gameLoopInterval = null;
+        let spawnInterval = null;
+
+        // --- DOM Elements ---
+        const gameArea = document.getElementById('game-area');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const folderBtns = document.querySelectorAll('.folder-btn');
+        const messageBox = document.getElementById('message-box');
+        const startScreen = document.getElementById('start-screen');
+        const playScreen = document.getElementById('game-play-screen');
+
+        /**
+         * Spawns a new data file.
+         */
+        function spawnFile() {
+            if (!gameActive) return;
+
+            const fileData = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+            const fileElement = document.createElement('div');
+            fileElement.classList.add('file');
+            fileElement.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`;
+            fileElement.style.top = `-50px`; // Start above the game area
+            fileElement.style.backgroundColor = fileData.color;
+            fileElement.textContent = fileData.emoji;
+            fileElement.dataset.type = fileData.type;
+
+            gameArea.appendChild(fileElement);
+        }
+
+        /**
+         * The main game loop, handles file movement.
+         */
+        function gameLoop() {
+            if (!gameActive) return;
+
+            const files = document.querySelectorAll('.file');
+            files.forEach(file => {
+                const currentTop = parseFloat(file.style.top);
+                const speed = 2; // Adjust speed here for difficulty
+
+                file.style.top = `${currentTop + speed}px`;
+
+                // Check if file has gone past the game area
+                if (currentTop > gameArea.offsetHeight) {
+                    file.remove();
+                    score = Math.max(0, score - 5); // Penalty for missing a file
+                    scoreEl.textContent = score;
+                    messageBox.textContent = '-5 Points!';
+                    messageBox.style.color = 'var(--incorrect-color)';
+                    setTimeout(() => messageBox.textContent = '', 500);
+                }
+            });
+            requestAnimationFrame(gameLoop);
+        }
+        
+        /**
+         * Handles user clicking on a folder.
+         * @param {Event} event The click event.
+         */
+        function handleFolderClick(event) {
+            if (!gameActive) return;
+
+            const folderType = event.currentTarget.dataset.type;
+            const files = document.querySelectorAll('.file');
+            
+            let foundMatch = false;
+            
+            files.forEach(file => {
+                // Check if a file is in the "catch" zone
+                const fileTop = parseFloat(file.style.top);
+                const catchZoneTop = gameArea.offsetHeight - 50;
+                
+                if (fileTop >= catchZoneTop && fileTop <= gameArea.offsetHeight && file.dataset.type === folderType) {
+                    // Correct match
+                    file.remove();
+                    score += 10;
+                    scoreEl.textContent = score;
+                    messageBox.textContent = '+10 Points!';
+                    messageBox.style.color = 'var(--correct-color)';
+                    setTimeout(() => messageBox.textContent = '', 500);
+                    foundMatch = true;
+                }
+            });
+
+            if (!foundMatch) {
+                // Incorrect click, apply penalty
+                score = Math.max(0, score - 5);
+                scoreEl.textContent = score;
+                messageBox.textContent = '-5 Points!';
+                messageBox.style.color = 'var(--incorrect-color)';
+                setTimeout(() => messageBox.textContent = '', 500);
+            }
+        }
+
+        /**
+         * Starts the game, resetting state and beginning loops.
+         */
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timer = 60;
+            scoreEl.textContent = score;
+            timerEl.textContent = timer;
+            
+            // Clear any old files and messages
+            gameArea.innerHTML = '';
+            messageBox.textContent = '';
+            startScreen.classList.add('hidden');
+            playScreen.classList.remove('hidden');
+
+            // Start game loops
+            gameLoopInterval = setInterval(() => {
+                timer--;
+                timerEl.textContent = timer;
+                if (timer <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            spawnInterval = setInterval(spawnFile, 1500); // Spawn a new file every 1.5 seconds
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        /**
+         * Ends the game and displays the final score.
+         */
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameLoopInterval);
+            clearInterval(spawnInterval);
+            
+            messageBox.textContent = `Game Over! Final Score: ${score}`;
+            messageBox.style.color = 'white';
+            
+            // Show start screen again
+            startScreen.classList.remove('hidden');
+            playScreen.classList.add('hidden');
+            startGameBtn.textContent = 'Play Again';
+        }
+
+        // --- Event Listeners ---
+        startGameBtn.addEventListener('click', startGame);
+        folderBtns.forEach(btn => {
+            btn.addEventListener('click', handleFolderClick);
+        });
+
+    </script>
+</body>
+</html>

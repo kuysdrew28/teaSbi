@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Panel — TSV Virac</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-orange: #ff7e29;
+      --secondary-orange: #ff9e4d;
+      --dark-gray: #1a1a1a;
+      --light-gray: #f5f5f5;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --transition-ease: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--light-gray);
+      color: black;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: var(--dark-gray);
+      border-bottom: 3px solid var(--primary-orange);
+    }
+    .navbar-brand img {
+      filter: drop-shadow(0 0 5px rgba(255, 126, 41, 0.5));
+    }
+    .nav-link {
+      color: white !important;
+      font-weight: 500;
+      transition: var(--transition-ease);
+      padding: 0.5rem 1rem !important;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background-color: var(--primary-orange);
+      transition: var(--transition-ease);
+      transform: translateX(-50%);
+    }
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 80%;
+    }
+    .nav-link.active, .nav-link.active:hover {
+      color: var(--primary-orange) !important;
+    }
+
+    /* Card Layout */
+    .admin-card {
+      border: none;
+      color: black;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      padding: 2rem;
+    }
+    .card-header {
+      background: linear-gradient(90deg, var(--primary-orange), var(--secondary-orange));
+      color: #000000;
+      font-weight: 700;
+      border-radius: 12px 12px 0 0;
+      padding: 1.25rem 2rem;
+      font-size: 1.25rem;
+    }
+    .card-body {
+      padding: 2rem;
+      color: #000000;
+    }
+    .btn-orange {
+      background-color: var(--primary-orange);
+      border-color: var(--primary-orange);
+      color: #fff;
+      font-weight: 600;
+      transition: var(--transition-ease);
+    }
+    .btn-orange:hover {
+      background-color: #e96a17;
+      border-color: #e96a17;
+    }
+    .btn-outline-primary {
+      color: var(--primary-orange);
+      border-color: var(--primary-orange);
+      font-weight: 600;
+      transition: var(--transition-ease);
+    }
+    .btn-outline-primary:hover {
+      color: white;
+      background-color: var(--primary-orange);
+    }
+    .btn-outline-danger {
+      color: #dc3545;
+      border-color: #dc3545;
+      font-weight: 600;
+      transition: var(--transition-ease);
+    }
+    .btn-outline-danger:hover {
+      color: white;
+      background-color: #dc3545;
+    }
+    .table thead th {
+      vertical-align: middle;
+      font-weight: 600;
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    .small-muted {
+      font-size: .85rem;
+      color: #6c757d;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--primary-orange);
+      border-color: var(--primary-orange) var(--primary-orange) #fff;
+      font-weight: 600;
+    }
+    .nav-tabs .nav-link {
+      color: #495057;
+      border: 1px solid transparent;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      transition: var(--transition-ease);
+    }
+    .nav-tabs .nav-link:hover {
+      border-color: #e9ecef #e9ecef #dee2e6;
+    }
+    .modal-content {
+      border-radius: 15px;
+    }
+    .modal-header {
+      border-bottom: none;
+    }
+    .modal-footer {
+      border-top: none;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+    }
+    
+
+    /* Mobile Adjustments */
+    @media (max-width: 768px) {
+      .admin-card {
+        padding: 1.5rem;
+      }
+      .card-header {
+        padding: 1rem 1.5rem;
+      }
+      .btn {
+        width: auto;
+        min-width: 100px;
+      }
+      .d-flex.gap-2 {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+
+  <div class="card admin-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-column flex-md-row">
+
+      <div class="mt-3 mt-md-0">
+     
+        <button id="btnRefresh" class="btn btn-light btn-sm fw-bold">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="members-tab" data-bs-toggle="tab" data-bs-target="#members" type="button" role="tab" aria-controls="members" aria-selected="true">Members</button>   
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="members" role="tabpanel" aria-labelledby="members-tab">
+          <div class="table-responsive">
+            <table id="usersTable" class="table table-striped table-bordered" style="width:100%">
+              <thead class="table-light">
+                <tr>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Contact</th>
+                  <th>Address</th>
+                  <th>Age</th>
+                  <th>Status</th>
+                  <th>Schedule</th>
+                  <th style="min-width:220px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody">
+                </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="absent" role="tabpanel" aria-labelledby="absent-tab">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="absentTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Schedule</th>
+                  <th>Absent Marked At</th>
+                </tr>
+              </thead>
+              <tbody id="absentTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div> </div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="editForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Full Name</label>
+          <input id="editFullName" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Email</label>
+          <input id="editEmail" class="form-control" type="email" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Contact</label>
+          <input id="editContact" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Address</label>
+          <textarea id="editAddress" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="mb-3 row">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Age</label>
+            <input id="editAge" class="form-control" type="number" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Status</label>
+            <select id="editStatus" class="form-select">
+              <option value="pending">Pending</option>
+              <option value="admitted">Admitted</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Assign Schedule</label>
+          <select id="editSchedule" class="form-select">
+            <option value="">No schedule assigned</option>
+            <option value="Martes 7AM">Martes 7AM</option>
+            <option value="Miyerkules 6AM">Miyerkules 6AM</option>
+            <option value="Miyerkules 7PM">Miyerkules 7PM</option>
+            <option value="Huwebes 6AM">Huwebes 6AM</option>
+            <option value="Huwebes 7PM">Huwebes 7PM</option>
+            <option value="Biyernes 7PM">Biyernes 7PM</option>
+            <option value="Sabado 6AM">Sabado 6AM</option>
+            <option value="Linggo 6AM">Linggo 6AM</option>
+            <option value="Linggo 10AM">Linggo 10AM</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-orange">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center p-4">
+        <p class="mb-3 fw-bold">Are you sure you want to delete this user?</p>
+        <div class="d-flex justify-content-center gap-2">
+          <button id="cancelDeleteBtn" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, doc, updateDoc, deleteDoc,
+    query, where, onSnapshot, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+    authDomain: "virac-tsv.firebaseapp.com",
+    projectId: "virac-tsv",
+    storageBucket: "virac-tsv.appspot.com",
+    messagingSenderId: "455316064834",
+    appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const usersTbody = document.getElementById('usersTbody');
+  const absentTbody = document.getElementById('absentTbody');
+  const btnRefresh = document.getElementById('btnRefresh');
+
+  const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+  const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+
+  let dt = null;
+  let usersCache = {};
+  let pendingDeleteId = null;
+
+  // ---- Monday Reset Function ----
+  async function resetSchedulesIfMonday() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const todayDateStr = today.toISOString().split("T")[0];
+
+    if (dayOfWeek === 1) {
+      const resetDocRef = doc(db, "system", "scheduleReset");
+      const resetDocSnap = await getDoc(resetDocRef);
+      const lastResetDate = resetDocSnap.exists() ? resetDocSnap.data().lastReset : null;
+
+      if (lastResetDate !== todayDateStr) {
+        console.log("Resetting all schedules...");
+        const snap = await getDocs(collection(db, 'users'));
+        const updates = snap.docs.map(d => updateDoc(doc(db, 'users', d.id), { schedule: "" }));
+        await Promise.all(updates);
+
+        await setDoc(resetDocRef, { lastReset: todayDateStr });
+        console.log("Schedules cleared and reset date saved.");
+      }
+    }
+  }
+
+  async function renderUsersTable(snapshotDocs) {
+    usersTbody.innerHTML = '';
+    usersCache = {};
+
+    snapshotDocs.forEach(docSnap => {
+      const id = docSnap.id;
+      const data = docSnap.data();
+      usersCache[id] = data;
+
+      const statusBadge = (data.status === 'admitted')
+        ? `<span class="badge bg-success">Admitted</span>`
+        : `<span class="badge bg-warning text-dark">Pending</span>`;
+
+      const admitBtn = (data.status === 'pending')
+        ? `<button class="btn btn-sm btn-orange me-1" onclick="admitUser('${id}')">Admit</button>`
+        : '';
+
+      const scheduleText = data.schedule ? data.schedule : '<span class="text-muted">No schedule</span>';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${escapeHtml(data.fullName || '')}</td>
+        <td>${escapeHtml(data.email || '')}</td>
+        <td>${escapeHtml(data.contact || '')}</td>
+        <td>${escapeHtml(data.address || '')}</td>
+        <td>${escapeHtml(data.age ?? '')}</td>
+        <td>${statusBadge}</td>
+        <td>${escapeHtml(scheduleText)}</td>
+        <td>
+          ${admitBtn}
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${id}')">Edit</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="promptDeleteUser('${id}')">Delete</button>
+        </td>
+      `;
+      usersTbody.appendChild(row);
+    });
+
+    if (dt) { try { dt.destroy(); } catch (e) {} }
+    setTimeout(() => {
+      dt = new DataTable('#usersTable', { searchable: true, perPage: 20 });
+    }, 50);
+  }
+
+  function listenUsersRealtime() {
+    const col = collection(db, 'users');
+    onSnapshot(col, (snapshot) => {
+      renderUsersTable(snapshot.docs);
+    });
+  }
+
+  async function loadAbsentToday() {
+    absentTbody.innerHTML = '';
+    const q = query(collection(db, 'users'), where('statusAttendance', '==', 'Absent'));
+    const snap = await getDocs(q);
+    const todayStr = (new Date()).toISOString().split('T')[0];
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      if (d.absentMarkedAt && d.absentMarkedAt.startsWith(todayStr)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(d.fullName || '')}</td>
+          <td>${escapeHtml(d.email || '')}</td>
+          <td>${escapeHtml(d.schedule || '')}</td>
+          <td>${escapeHtml(new Date(d.absentMarkedAt).toLocaleString())}</td>
+        `;
+        absentTbody.appendChild(tr);
+      }
+    });
+  }
+
+  window.openEditModal = function(userId) {
+    const user = usersCache[userId];
+    if (!user) return alert('User not found');
+
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editFullName').value = user.fullName || '';
+    document.getElementById('editEmail').value = user.email || '';
+    document.getElementById('editContact').value = user.contact || '';
+    document.getElementById('editAddress').value = user.address || '';
+    document.getElementById('editAge').value = user.age ?? '';
+    document.getElementById('editStatus').value = user.status || 'pending';
+    document.getElementById('editSchedule').value = user.schedule || '';
+    editModal.show();
+  };
+
+  document.getElementById('editForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editUserId').value;
+    if (!id) return;
+
+    const payload = {
+      fullName: document.getElementById('editFullName').value.trim(),
+      email: document.getElementById('editEmail').value.trim(),
+      contact: document.getElementById('editContact').value.trim(),
+      address: document.getElementById('editAddress').value.trim(),
+      age: Number(document.getElementById('editAge').value) || null,
+      status: document.getElementById('editStatus').value,
+      schedule: document.getElementById('editSchedule').value || ""
+    };
+
+    await updateDoc(doc(db, 'users', id), payload);
+    editModal.hide();
+  });
+
+  window.admitUser = async function(userId) {
+    if (!confirm('Admit this member?')) return;
+    await updateDoc(doc(db, 'users', userId), { status: 'admitted' });
+  };
+
+  window.promptDeleteUser = function(userId) {
+    pendingDeleteId = userId;
+    confirmDeleteModal.show();
+  };
+
+  document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+    if (!pendingDeleteId) return;
+    await deleteDoc(doc(db, 'users', pendingDeleteId));
+    pendingDeleteId = null;
+    confirmDeleteModal.hide();
+  });
+
+  btnRefresh.addEventListener('click', () => {
+    loadAbsentToday();
+  });
+
+  function escapeHtml(str) {
+    if (!str && str !== 0) return '';
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#39;");
+  }
+
+  // ---- Init ----
+  await resetSchedulesIfMonday();
+  listenUsersRealtime();
+  loadAbsentToday();
+  document.getElementById('absent-tab').addEventListener('click', loadAbsentToday);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

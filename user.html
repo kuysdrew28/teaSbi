@@ -1,0 +1,308 @@
+</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfigGate = {
+        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+        authDomain: "virac-tsv.firebaseapp.com",
+        projectId: "virac-tsv",
+        storageBucket: "virac-tsv.appspot.com",
+        messagingSenderId: "455316064834",
+        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+    try { initializeApp(firebaseConfigGate); } catch (e) {}
+    const authGate = getAuth();
+    const dbGate = getFirestore();
+    onAuthStateChanged(authGate, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+        const userRef = doc(dbGate, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+            alert("Access denied. Only admitted users can view this page.");
+            await signOut(authGate);
+            window.location.href = "login.html";
+        }
+    });
+</script>
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="img/logo2.png">
+    <meta name="description" content="Gym Template">
+    <meta name="keywords" content="Gym, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Privacy Policy & Terms of Service</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Oswald:300,400,500,600,700&display=swap" rel="stylesheet">
+
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/flaticon.css" type="text/css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
+    <link rel="stylesheet" href="css/barfiller.css" type="text/css">
+    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+
+      <!-- Botpress Inject Scripts -->
+<script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/08/22/06/20250822063030-NCUYH9BC.js" defer></script>
+</head>
+
+<body>
+    <!-- Page Preloder -->
+    <div id="preloder">
+        <div class="loader"></div>
+    </div>
+
+  <!-- Offcanvas Menu Section Begin -->
+    <div class="offcanvas-menu-overlay"></div>
+    <div class="offcanvas-menu-wrapper">
+        <div class="canvas-close">
+            <i class="fa fa-close"></i>
+        </div>
+        <div class="canvas-search search-switch">
+            <i class="fa fa-search"></i>
+        </div>
+        <nav class="canvas-menu mobile-menu">
+            <ul>
+                <li><a href="./index.html">Home</a></li>
+                <li><a href="./suguan.html">Pagsamba</a></li>
+                <li><a href="./suguan-panata.html">Panata</a></li>
+                <li><a href="./games.html">Games</a></li>
+                <li><a href="./inventory.html">Inventory</a></li>
+                <li class="active"><a href="./user.html">My Schedule</a></li>
+                <li><a href="./admin-login.html">Admin</a></li>
+
+
+            </ul>
+        </nav>
+        <div id="mobile-menu-wrap"></div>
+        <div class="canvas-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+        </div>
+    </div>
+    <!-- Offcanvas Menu Section End -->
+
+    <!-- Header Section Begin -->
+    <header class="header-section">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="logo">
+                        <a href="./index.html">
+                            <img src="img/logo.png" alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <nav class="nav-menu">
+                        <ul>
+                            <li><a href="./index.html">Home</a></li>
+                            <li><a href="./suguan.html">Pagsamba</a></li>
+                            <li><a href="./suguan-panata.html">Panata</a></li>
+                            <li><a href="./games.html">Games</a></li>
+                            <li><a href="./inventory.html">Inventory</a></li>
+                   <li class="active"><a href="./user.html">My Schedule</a></li>
+                   <li><a href="./admin-login.html">Admin</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-lg-3">
+                    <div class="top-option">
+                        <div class="to-search search-switch">
+                            <i class="fa fa-search"></i>
+                        </div>
+                        <div class="to-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas-open">
+                <i class="fa fa-bars"></i>
+            </div>
+        </div>
+    </header>
+    <!-- Header End -->
+
+
+
+ <iframe src="./page/user-panel.html"></iframe>
+
+
+        <!-- Footer Section Begin -->
+    <section class="footer-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="fs-about">
+                        <div class="fa-logo">
+                            <a href="#"><img src="img/logo.png" alt=""></a>
+                        </div>
+                        <p>The ViracTSV Management System is a web-based application designed to streamline and modernize the schedulling process of the TSV officers.</p>
+                        <div class="fa-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <div class="fs-widget">
+                        <h4>Useful links</h4>
+                        <ul>
+                            <li><a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/
+">INC CFO</a></li>
+                            <li><a href="https://t.me/INCNewsandUpdates">News and Updates</a></li>
+                            <li><a href="https://t.me/INCRadio">INCRadio</a></li>
+                            <li><a href="https://www.youtube.com/@INCTVChannel">INCTV Youtube Channel</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <div class="fs-widget">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="/policy.html">Privacy Policy</a></li>
+                            <li><a href="/policy.html">Terms of Service</a></li>
+                            <li><a href="https://web.webex.com/">Webex</a></li>
+                            <li><a href="https://tricaller.com/">TriCaller</a></li>
+                            
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="fs-widget">
+                        <h4>Tips & Guides</h4>
+                        <div class="fw-recent">
+                            <h6><a href="#">How to troubleshoot computer?</a></h6>
+                            <ul>
+                                <li>3 min read</li>
+                                <li>18 Comment</li>
+                            </ul>
+                        </div>
+                        <div class="fw-recent">
+                            <h6><a href="#">How to manage OBS in Video-Streaming?</a></h6>
+                            <ul>
+                                <li>3 min read</li>
+                                <li>28 Comment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="copyright-text">
+                        <p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+  ViracTSV | Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved <br>Special thanks <i class="fa fa-heart" aria-hidden="true"></i> to <a href="https://colorlib.com" target="_blank">Colorlib</a>
+  <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
+                    </div>
+                                                    <div style="margin-top:10px;">
+                                                        <button id="logout-footer-btn" class="btn btn-danger" style="display:none;">Log Out</button>
+                                                    </div>
+                                                                                                        <script type="module">
+                                                                                                                import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+                                                                                                                import { getAuth, onAuthStateChanged, signOut, getFirebaseConfig } from './js/firebase-auth-gate.js';
+                                                                                                                let logoutAppUser;
+                                                                                                                try {
+                                                                                                                    logoutAppUser = initializeApp(getFirebaseConfig());
+                                                                                                                } catch (e) {
+                                                                                                                    // App already initialized
+                                                                                                                }
+                                                                                                                const logoutBtnUser = document.getElementById('logout-footer-btn');
+                                                                                                                const logoutAuthUser = getAuth();
+                                                                                                                onAuthStateChanged(logoutAuthUser, user => {
+                                                                                                                    if (user) {
+                                                                                                                        logoutBtnUser.style.display = 'inline-block';
+                                                                                                                    } else {
+                                                                                                                        logoutBtnUser.style.display = 'none';
+                                                                                                                    }
+                                                                                                                });
+                                                                                                                logoutBtnUser.addEventListener('click', async () => {
+                                                                                                                    await signOut(logoutAuthUser);
+                                                                                                                    window.location.href = 'login.html';
+                                                                                                                });
+                                                                                                        </script>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer Section End -->
+
+    <!-- Search model Begin -->
+    <div class="search-model">
+        <div class="h-100 d-flex align-items-center justify-content-center">
+            <div class="search-close-switch">+</div>
+            <form class="search-model-form">
+                <input type="text" id="search-input" placeholder="Search here.....">
+            </form>
+        </div>
+    </div>
+    <!-- Search model end -->
+
+    <!-- Js Plugins -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/masonry.pkgd.min.js"></script>
+    <script src="js/jquery.barfiller.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+        <script src="js/main.js"></script>
+        <script type="module">
+            import { authGate } from "./js/firebase-auth-gate.js";
+            authGate({
+                onAdmitted: () => {
+                    const el = document.getElementById("protected-content");
+                    if (el) el.style.display = "block";
+                },
+                loginPage: "login.html"
+            });
+        </script>
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain: "virac-tsv.firebaseapp.com",
+      projectId: "virac-tsv",
+      storageBucket: "virac-tsv.appspot.com",
+      messagingSenderId: "455316064834",
+      appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+        // Auth gate - one time login for all pages
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+            // User is logged in, allow access
+            // Optionally, check for 'admitted' status if needed
+        });
+  </script>
+</body>
+
+</html>

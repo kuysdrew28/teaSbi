@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="img/logo2.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff7a00;
+            --secondary-color: #e56a00;
+            --text-light: #6c757d;
+            --bg-light: #f8f9fa;
+        }
+
+                    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none; /* removes border */
+    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: black;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2f2d2d;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            padding-top: 1rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-brand img {
+            max-width: 40px;
+            margin-right: 0.5rem;
+        }
+        
+        .nav-link {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #fafcfe;
+            padding: 1rem 1.5rem;
+            margin: 0.25rem 0;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color);
+            background-color: rgba(255, 122, 0, 0.1);
+        }
+        
+        .nav-link.active i {
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.5rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                left: -250px;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                display: block;
+            }
+        }
+        .main-header {
+            background-color: #ff7a00;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .notification-btn, .profile-dropdown {
+            cursor: pointer;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Sidebar Navigation -->
+    <nav id="sidebarMenu" class="sidebar">
+        <div class="sidebar-brand">
+            <img src="./img/logo2.png" alt="TSV Logo">
+            Admin Panel
+        </div>
+        <div class="nav flex-column px-3">
+            <a class="nav-link active" data-target="dashboard" href="#" data-title="Dashboard">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a class="nav-link" data-target="pagsamba" href="#" data-title="Assign Schedule for Pagsamba">
+                <i class="bi bi-calendar-event-fill"></i> Assign Schedule
+            </a>
+            <a class="nav-link" data-target="panata" href="#" data-title="Assign Schedule for Panata">
+                <i class="bi bi-calendar-event-fill"></i> Assign Day
+            </a>
+            <a class="nav-link" data-target="admission" href="#" data-title="Admission">
+                <i class="bi bi-person-plus-fill"></i> Admission
+            </a>
+            <a class="nav-link" data-target="schedules" href="#" data-title="Schedules">
+                <i class="bi bi-clock-fill"></i> Schedules
+            </a>
+            <a class="nav-link" data-target="forms" href="#" data-title="Forms">
+                <i class="bi bi-file-earmark-text-fill"></i> Forms
+            </a>
+            <a class="nav-link" data-target="attendance" href="#" data-title="Attendance">
+                <i class="bi bi-clipboard2-check-fill"></i> Attendance
+            </a>
+                        <a class="nav-link" data-target="summary" href="#" data-title="Attendance">
+                <i class="bi bi-clipboard2-check-fill"></i> Summary
+            </a>
+            <a class="nav-link" data-target="inventory" href="#" data-title="Inventory">
+                <i class="bi bi-boxes"></i> Inventory
+            </a>
+            <a class="nav-link" data-target="logs" href="#" data-title="Logs">
+                <i class="bi bi-list-ul"></i> Logs
+            </a>
+            <button id="logoutBtn" class="btn btn-danger w-100">Logout Account</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Top Navbar for mobile -->
+        <nav class="navbar navbar-expand-lg d-lg-none p-0 mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand text-primary fw-bold" href="#">Admin Panel</a>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Header -->
+        <div class="main-header d-flex justify-content-between align-items-center">
+                        <h1 id="mainTitle" class="fw-bold mb-0">Dashboard</h1>
+                        <div class="d-flex align-items-center">
+                                <span id="welcomeEmail" class="me-3 d-none d-md-block text-muted">Welcome, ...</span>
+                                <i class="bi bi-bell-fill me-3 text-secondary notification-btn"></i>
+                                <div class="dropdown profile-dropdown">
+                                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <img src="./img/admin.png" class="rounded-circle" alt="Profile" style="width:40px; height:40px;">
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="#" id="dropdownLogout">Logout</a></li>
+                                    </ul>
+                                </div>
+                        </div>
+        </div>
+
+<!-- Dashboard -->
+<div id="dashboard" class="content-section active">
+    <iframe src="./admin/status.html"></iframe>
+</div> <!-- ✅ this closing div was missing -->
+
+<!-- Pagsamba -->
+<div id="pagsamba" class="content-section">
+    <div class="card">
+
+        <iframe src="./admin/assign.html"></iframe>
+    </div>
+</div>
+
+<!-- Panata -->
+<div id="panata" class="content-section">
+    <div class="card">
+        <iframe src="./admin/assign-panata.html"></iframe>
+    </div>
+</div>
+
+<!-- Admission -->
+<div id="admission" class="content-section">
+    <div class="card">
+        <iframe src="./admin/superadmin.html"></iframe>
+    </div>
+</div>
+
+<!-- Schedules -->
+<div id="schedules" class="content-section">
+    <div class="card">
+        <iframe src="./admin/admin-survey.html"></iframe>
+    </div>
+</div>
+
+<!-- Forms -->
+<div id="forms" class="content-section">
+    <div class="card">
+<iframe src="https://docs.google.com/spreadsheets/d/1NIxIFCS3PsA0uQU0-pk4Vgz6xN7y5gCd/edit?usp=sharing&ouid=117243803781635905350&rtpof=true&sd=true"</iframe>
+</div>
+
+<!-- Attendance -->
+<div id="attendance" class="content-section">
+        <iframe src="./admin/admin-attendance.html"></iframe>
+    </div>
+</div>
+
+<!-- Summary -->
+<div id="summary" class="content-section">
+        <iframe src="./admin/summary.html"></iframe>
+    </div>
+</div>
+
+<!-- Inventory -->
+<div id="inventory" class="content-section">
+    <div class="card">
+        <iframe src="./admin/inventory.html"></iframe>
+    </div>
+</div>
+
+<!-- Logs -->
+<div id="logs" class="content-section">
+    <div class="card">
+        <iframe src="./admin/logs.html"></iframe>
+    </div>
+</div>
+
+
+    </main>
+
+    <!-- Bootstrap JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+   import { getAuth, onAuthStateChanged, signOut } 
+  from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBBMRruXH9Va15eBgogfwQF2zMD8gxZPps",
+      authDomain: "admin-1cbb9.firebaseapp.com",
+      projectId: "admin-1cbb9",
+      storageBucket: "admin-1cbb9.firebasestorage.app",
+      messagingSenderId: "300755873138",
+      appId: "1:300755873138:web:c54b3acf90f03b361241eb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+/* -----------------------
+   Auth Gate
+-------------------------*/
+onAuthStateChanged(auth, (user) => {
+        if (!user) {
+                window.location.href = "admin-login.html";
+                return;
+        }
+        // User is authenticated, allow access
+        // Set welcome email
+        const welcomeSpan = document.getElementById('welcomeEmail');
+        if (welcomeSpan && user.email) {
+            welcomeSpan.textContent = `Welcome, ${user.email}!`;
+        }
+        loadSchedules();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(() => {
+    alert("You have been logged out.");
+    window.location.href = "admin-login.html";
+  }).catch((error) => {
+    console.error("Logout failed:", error);
+    alert("Logout failed. Please try again.");
+  });
+});
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link[data-target]');
+            const contentSections = document.querySelectorAll('.content-section');
+            const sidebar = document.getElementById('sidebarMenu');
+            const mainTitle = document.getElementById('mainTitle');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    // Remove active class from all links
+                    navLinks.forEach(item => item.classList.remove('active'));
+                    // Add active class to clicked link
+                    link.classList.add('active');
+
+                    const targetId = link.getAttribute('data-target');
+                    const targetTitle = link.getAttribute('data-title');
+
+                    // Update main header title
+                    mainTitle.innerHTML = targetTitle;
+
+                    // Hide all content sections
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    // Show the target content section
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            // Toggle sidebar for mobile
+            const toggleButton = document.querySelector('[data-bs-toggle="collapse"]');
+            if (toggleButton) {
+                toggleButton.addEventListener('click', () => {
+                    sidebar.classList.toggle('show');
+                });
+            }
+        });
+  // Logout function
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        showLoading();
+        signOut(auth).then(() => {
+            alert("You have been logged out.");
+            window.location.href = "admin-login.html";
+        });
+    });
+    // Dropdown logout
+    const dropdownLogout = document.getElementById("dropdownLogout");
+    if (dropdownLogout) {
+        dropdownLogout.addEventListener("click", function(e) {
+            e.preventDefault();
+            document.getElementById("logoutBtn").click();
+        });
+    }
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Survey Results - Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary-orange: #ff7e29;
+      --secondary-orange: #ff9e4d;
+      --dark-gray: #1a1a1a;
+      --light-gray: #f5f5f5;
+      --bg-dark: #121212;
+      --text-light: #e0e0e0;
+      --card-bg: #1e1e1e;
+      --transition-ease: 0.3s ease;
+    }
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-light);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Watermark */
+    body::before {
+      content: "Virac- TSV";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 15vw;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.05);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .navbar {
+      background: var(--dark-gray);
+      border-bottom: 3px solid var(--primary-orange);
+      transition: var(--transition-ease);
+    }
+    .navbar-brand img {
+      filter: drop-shadow(0 0 8px var(--primary-orange));
+    }
+    .nav-link {
+      color: var(--text-light) !important;
+      font-weight: 500;
+      transition: var(--transition-ease);
+      padding: 0.5rem 1rem !important;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background-color: var(--primary-orange);
+      transition: var(--transition-ease);
+      transform: translateX(-50%);
+    }
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 80%;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary-orange) !important;
+    }
+
+    .container h2 {
+      color: var(--primary-orange);
+    }
+    .container img {
+      filter: drop-shadow(0 0 8px var(--primary-orange));
+    }
+    
+    .form-control, .form-select {
+      background-color: var(--dark-gray);
+      border: 1px solid var(--primary-orange);
+      color: var(--text-light);
+    }
+    .form-control::placeholder, .form-select option {
+      color: var(--text-light);
+      background-color: var(--dark-gray);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--secondary-orange);
+      box-shadow: 0 0 5px rgba(255, 126, 41, 0.5);
+    }
+
+    .table {
+      background-color: var(--card-bg);
+      color: var(--text-light);
+    }
+    .table th {
+      background-color: var(--primary-orange) !important;
+      color: var(--dark-gray);
+      border-color: var(--dark-gray);
+    }
+    .table-bordered {
+      border-color: rgba(255, 126, 41, 0.2);
+    }
+    .table tbody tr:nth-child(even) {
+      background-color: var(--dark-gray);
+    }
+    .table tbody tr:hover {
+      background-color: rgba(255, 126, 41, 0.1);
+    }
+    .btn-danger {
+      background-color: #b3261e;
+      border-color: #b3261e;
+      color: white;
+    }
+    .btn-danger:hover {
+      background-color: #d13d3d;
+      border-color: #d13d3d;
+    }
+    .badge-warning {
+      background-color: var(--secondary-orange) !important;
+      color: var(--dark-gray) !important;
+    }
+    .text-muted, .text-center, .alert {
+      color: var(--text-light) !important;
+    }
+
+    footer {
+      background-color: var(--dark-gray);
+      color: var(--text-light);
+      padding: 40px 0;
+      margin-top: auto;
+      text-align: center;
+    }
+    footer img {
+      width: 160px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 8px var(--primary-orange));
+    }
+    footer p {
+      color: var(--text-light);
+      margin: 0;
+    }
+    .footer-links {
+      margin-top: 10px;
+    }
+    .footer-links a {
+      color: var(--primary-orange);
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s ease;
+    }
+    .footer-links a:hover {
+      color: var(--secondary-orange);
+    }
+  </style>
+</head>
+<body class="p-0">
+
+
+  <div class="container my-5 flex-grow-1">
+    <div class="text-center mb-4">
+      <h2>TSV Schedule Responses</h2>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <label for="filterCategory" class="form-label">Filter by Schedule Type:</label>
+        <select id="filterCategory" class="form-select">
+          <option value="all">All</option>
+          <option value="Pagsamba">Pagsamba</option>
+          <option value="Pamamahayag">Pamamahayag</option>
+          <option value="TP">Tanging Pagtitipon</option>
+          <option value="B">Bautismo</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="searchName" class="form-label">Search Respondent Name:</label>
+        <input type="text" id="searchName" class="form-control" placeholder="Enter name...">
+      </div>
+    </div>
+
+    <div id="loading" class="text-center mb-3">Loading data...</div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Selected Schedules</th>
+            <th>Timestamp</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain: "virac-tsv.firebaseapp.com",
+      projectId: "virac-tsv",
+      storageBucket: "virac-tsv.appspot.com",
+      messagingSenderId: "455316064834",
+      appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const tableBody = document.getElementById("tableBody");
+    const loading = document.getElementById("loading");
+    const filterCategory = document.getElementById("filterCategory");
+    const searchName = document.getElementById("searchName");
+
+    let allData = [];
+
+    function highlightMatches(text, keyword) {
+      const pattern = new RegExp(`(${keyword})`, "gi");
+      return text.replace(pattern, '<span class="badge bg-warning text-dark">$1</span>');
+    }
+
+    function renderTable(data, keyword = "") {
+      tableBody.innerHTML = '';
+      if (data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No results found.</td></tr>';
+        return;
+      }
+
+      data.forEach((entry, index) => {
+        const highlightedSchedules = entry.schedules.map(sched =>
+          keyword ? highlightMatches(sched, keyword) : sched
+        );
+
+        const row = `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${entry.name}</td>
+            <td>${highlightedSchedules.join("<br>")}</td>
+            <td>${entry.timestamp}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="deleteEntry('${entry.id}')">Delete</button>
+            </td>
+          </tr>
+        `;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    function applyFilters() {
+      const selected = filterCategory.value;
+      const searchText = searchName.value.toLowerCase();
+
+      let filtered = [...allData];
+
+      if (selected !== 'all') {
+        filtered = filtered.filter(entry =>
+          entry.schedules.some(sched => sched.toLowerCase().includes(selected.toLowerCase()))
+        );
+      }
+
+      if (searchText) {
+        filtered = filtered.filter(entry =>
+          entry.name.toLowerCase().includes(searchText)
+        );
+      }
+
+      renderTable(filtered, selected !== 'all' ? selected : "");
+    }
+
+    window.deleteEntry = function(docId) {
+      if (confirm("Are you sure you want to delete this entry?")) {
+        db.collection("scheduleSurvey").doc(docId).delete().then(() => {
+          alert("Entry deleted successfully.");
+          allData = allData.filter(entry => entry.id !== docId);
+          renderTable(allData);
+        }).catch((error) => {
+          alert("Error deleting document: " + error.message);
+        });
+      }
+    }
+
+    db.collection("scheduleSurvey").orderBy("timestamp", "desc").get().then((querySnapshot) => {
+      allData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || "N/A",
+          schedules: Array.isArray(data.schedules) ? data.schedules : [],
+          timestamp: data.timestamp?.toDate().toLocaleString() || "N/A"
+        };
+      });
+
+      renderTable(allData);
+      loading.style.display = "none";
+    }).catch((error) => {
+      loading.innerHTML = `<div class="alert alert-danger">Error loading data: ${error.message}</div>`;
+    });
+
+    filterCategory.addEventListener("change", applyFilters);
+    searchName.addEventListener("input", applyFilters);
+  </script>
+</body>
+</html>
