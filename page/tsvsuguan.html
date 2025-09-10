@@ -295,29 +295,35 @@ async function loadSchedules() {
   // For debugging: show the computed schedule keys
   console.log("Computed scheduleMap keys (local):", Object.keys(scheduleMap));
 
+  const updates = [];
   snap.forEach((docSnap) => {
     const data = docSnap.data();
-
-    // Normalize assignedTime to local "YYYY-MM-DDTHH:MM:SS"
     let assignedKey;
     const at = data.assignedTime;
-
-    if (typeof at === "string") {
-      // If it has milliseconds or timezone, trim to 19 chars
-      assignedKey = at.slice(0, 19);
-    } else if (at && typeof at.toDate === "function") {
-      // Firestore Timestamp
-      assignedKey = formatLocal(at.toDate());
-    } else {
-      assignedKey = null;
+    let assignedArr = Array.isArray(at) ? at : (at ? [at] : []);
+    let absent = data.absent;
+    let timeIn = data.timeIn;
+    let now = new Date();
+    let autoAbsent = false;
+    // Check each assigned schedule
+    assignedArr.forEach(scheduleTime => {
+      let scheduleDate = new Date(scheduleTime);
+      if (scheduleDate < now && !timeIn) {
+        autoAbsent = true;
+      }
+    });
+    if (autoAbsent && !absent) {
+      // Mark as absent in Firestore
+      updates.push(updateDoc(doc(db, collectionName, docSnap.id), { absent: true }));
+      absent = true;
     }
-
-    console.log("Doc:", docSnap.id, "assignedTime(raw):", at, "assignedKey(norm):", assignedKey);
-
+    // For display, use first assignedKey for grouping
+    assignedKey = assignedArr[0] || null;
     const scheduleName = (assignedKey && scheduleMap[assignedKey]) ? scheduleMap[assignedKey] : "Unassigned";
     if (!grouped[scheduleName]) grouped[scheduleName] = [];
-    grouped[scheduleName].push({ name: docSnap.id, ...data });
+    grouped[scheduleName].push({ name: docSnap.id, ...data, absent });
   });
+  if (updates.length) await Promise.all(updates);
 
   // Render sections in a fixed order from scheduleGroups
   for (const [label, schedules] of Object.entries(scheduleGroups)) {
