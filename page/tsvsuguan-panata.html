@@ -304,7 +304,7 @@ async function loadSchedules() {
 
     const scheduleName = (assignedKey && scheduleMap[assignedKey]) ? scheduleMap[assignedKey] : "Unassigned";
     if (!grouped[scheduleName]) grouped[scheduleName] = [];
-    grouped[scheduleName].push({ name: docSnap.id, ...data });
+  grouped[scheduleName].push({ name: docSnap.id, ...data });
   });
 
   // Render sections in a fixed order from scheduleGroups
@@ -324,7 +324,19 @@ async function loadSchedules() {
                 <thead><tr><th class="name-col">Name</th><th class="actions-col">Actions</th></tr></thead><tbody>`;
 
       grouped[schedule].forEach((member) => {
-        if (member.absent) {
+        // Determine assigned time for this member
+        let assignedTime = member.assignedTime;
+        let assignedDate = null;
+        if (typeof assignedTime === "string") {
+          assignedDate = new Date(assignedTime);
+        } else if (assignedTime && typeof assignedTime.toDate === "function") {
+          assignedDate = assignedTime.toDate();
+        }
+        const now = new Date();
+        // If assigned time has passed and no timeIn or timeOut, show Absent
+        if ((assignedDate && now > assignedDate) && !member.timeIn && !member.timeOut) {
+          html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
+        } else if (member.absent) {
           html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
         } else if (!member.timeIn) {
           html += `<tr><td>${member.name}</td><td><button class="btn btn-timein w-100" onclick="timeIn('${member.name}')">Pagtanggap</button></td></tr>`;
