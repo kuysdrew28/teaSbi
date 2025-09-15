@@ -13,6 +13,59 @@
 
 
   <style>
+    .schedule-row {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .schedule-label-row {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-orange);
+      margin-bottom: 8px;
+    }
+    .schedule-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn-pagtanggap {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 8px;
+    }
+    .btn-pagtanggap:disabled {
+      background: #6c757d;
+      color: #fff;
+    }
+    .btn-pagtupad {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 8px;
+    }
+    .btn-pagtupad:disabled {
+      background: #6c757d;
+      color: #fff;
+    }
+    .btn-completed {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 8px;
+    }
     :root {
       --primary-orange: #ff7300;
       --bg-dark: #121212;
@@ -102,7 +155,7 @@
     <button id="loadBtn" class="btn btn-custom">Load Schedule</button>
 
     <div class="info mt-4" id="userInfo" style="display:none;">
-      <span><strong>Assigned Schedule:</strong> <span id="scheduleTime">---</span></span><br>
+  <span><strong>Assigned Schedules:</strong><br> <span id="scheduleTime">---</span></span><br>
       <span><strong>Pagtanggap:</strong> <span id="inStatus">---</span></span><br>
       <span><strong>Pagtupad:</strong> <span id="outStatus">---</span></span>
       <div id="actionBtnWrapper" class="mt-3">
@@ -224,60 +277,99 @@
       const data = docSnap.data();
       userInfo.style.display = "block";
 
-      const schedDate = formatScheduleTime(data.assignedTime);
-      scheduleTime.textContent = schedDate ? schedDate.toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit", hour12: true }) : "No schedule";
+      // Support multiple schedules
+      let times = [];
+      if (data.assignedTime1) times.push({key: '1', value: data.assignedTime1});
+      if (data.assignedTime2) times.push({key: '2', value: data.assignedTime2});
+      if (data.assignedTime && !times.length) times.push({key: '', value: data.assignedTime}); // fallback legacy
 
-      inStatus.textContent = data.timeIn ? "✔️" : "❌";
-      outStatus.textContent = data.timeOut ? "✔️" : "❌";
-
-      // Reset wrapper
-      actionBtnWrapper.innerHTML = `<button id="timeInBtn" class="btn btn-custom">Pagtanggap</button>`;
-      const timeInBtn = document.getElementById("timeInBtn");
-
-      const now = new Date();
-
-      // Already COMPLETED
-      if (data.timeIn && data.timeOut) {
-        actionBtnWrapper.innerHTML = `<button class="btn-completed" disabled>COMPLETED</button>`;
+      if (times.length === 0) {
+        scheduleTime.textContent = "No schedule";
+        actionBtnWrapper.innerHTML = "";
+        inStatus.textContent = "❌";
+        outStatus.textContent = "❌";
         return;
       }
 
-      // ABSENT
-      if (schedDate && now > schedDate && !data.timeOut) {
-        if (!data.absent) {
-          await setDoc(docRef, { absent: true }, { merge: true });
+      // Show all assigned schedules with their own buttons/status, aligned and colored
+      scheduleTime.innerHTML = '';
+      actionBtnWrapper.innerHTML = '';
+      times.forEach((t, idx) => {
+        const d = formatScheduleTime(t.value);
+        const label = d ? d.toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit", hour12: true }) : "Invalid";
+        // Status fields
+        const timeInField = t.key ? `timeIn${t.key}` : 'timeIn';
+        const timeOutField = t.key ? `timeOut${t.key}` : 'timeOut';
+        const timeInVal = data[timeInField];
+        const timeOutVal = data[timeOutField];
+        // Status icons
+        const inIcon = timeInVal ? '✔️' : '❌';
+        const outIcon = timeOutVal ? '✔️' : '❌';
+        // Button IDs
+        const inBtnId = `timeInBtn_${t.key || 'main'}`;
+        const outBtnId = `timeOutBtn_${t.key || 'main'}`;
+        // Logic for showing Pagtupad button
+        let showPagtupad = false;
+        if (!timeOutVal && d) {
+          const now = new Date();
+          const twoHoursBefore = new Date(d.getTime() - 2 * 60 * 60 * 1000);
+          // Only show if now is >= twoHoursBefore AND now < d (not after schedule)
+          if (now >= twoHoursBefore && now < d) {
+            showPagtupad = true;
+          }
         }
-        actionBtnWrapper.innerHTML = `<button class="btn-absent" disabled>ABSENT</button>`;
-        outStatus.textContent = "❌ ABSENT";
-        return;
-      }
+        // Row HTML
+        actionBtnWrapper.innerHTML += `
+          <div class='schedule-row' id='row_${t.key || 'main'}'>
+            <div class='schedule-label-row'>${label}</div>
+            <div class='d-flex flex-wrap align-items-center gap-3 mb-2'>
+              <span><strong>Pagtanggap:</strong> <span id='inStatus_${t.key || 'main'}'>${inIcon}</span></span>
+              <span><strong>Pagtupad:</strong> <span id='outStatus_${t.key || 'main'}'>${outIcon}</span></span>
+            </div>
+            <div class='schedule-btns'>
+              <button id='${inBtnId}' class='btn btn-pagtanggap' ${timeInVal ? 'disabled' : ''}>Pagtanggap</button>
+              <button id='${outBtnId}' class='btn btn-pagtupad' style='${showPagtupad ? '' : 'display:none;'}'>Pagtupad</button>
+              <button class='btn btn-completed' style='${timeInVal && timeOutVal ? '' : 'display:none;'}' disabled>COMPLETED</button>
+            </div>
+          </div>
+        `;
+      });
 
-      // Normal Flow
-      timeInBtn.onclick = async () => {
-        showLoading();
-        await setDoc(docRef, { timeIn: serverTimestamp() }, { merge: true });
-        inStatus.textContent = "✔️";
-        alert("Pagtanggap recorded!");
-        actionBtnWrapper.innerHTML = `<button id="timeOutBtn" class="btn btn-secondary">Pagtupad</button>`;
-        const timeOutBtn = document.getElementById("timeOutBtn");
-        timeOutBtn.onclick = async () => {
-          await setDoc(docRef, { timeOut: serverTimestamp() }, { merge: true });
-          outStatus.textContent = "✔️";
-          alert("Pagtupad recorded!");
-          actionBtnWrapper.innerHTML = `<button class="btn-completed" disabled>COMPLETED</button>`;
-        };
-      };
-
-      if (data.timeIn && !data.timeOut) {
-        actionBtnWrapper.innerHTML = `<button id="timeOutBtn" class="btn btn-secondary">Pagtupad</button>`;
-        const timeOutBtn = document.getElementById("timeOutBtn");
-        timeOutBtn.onclick = async () => {
-          await setDoc(docRef, { timeOut: serverTimestamp() }, { merge: true });
-          outStatus.textContent = "✔️";
-          alert("Pagtupad recorded!");
-          actionBtnWrapper.innerHTML = `<button class="btn-completed" disabled>COMPLETED</button>`;
-        };
-      }
+      // Attach event listeners for each schedule's buttons
+      times.forEach((t, idx) => {
+        const inBtnId = `timeInBtn_${t.key || 'main'}`;
+        const outBtnId = `timeOutBtn_${t.key || 'main'}`;
+        const inStatusId = `inStatus_${t.key || 'main'}`;
+        const outStatusId = `outStatus_${t.key || 'main'}`;
+        const timeInField = t.key ? `timeIn${t.key}` : 'timeIn';
+        const timeOutField = t.key ? `timeOut${t.key}` : 'timeOut';
+        const inBtn = document.getElementById(inBtnId);
+        const outBtn = document.getElementById(outBtnId);
+        if (inBtn) {
+          inBtn.onclick = async () => {
+            showLoading();
+            await setDoc(docRef, { [timeInField]: serverTimestamp() }, { merge: true });
+            document.getElementById(inStatusId).textContent = '✔️';
+            inBtn.disabled = true;
+            if (outBtn) outBtn.style.display = '';
+            alert('Pagtanggap recorded!');
+          };
+        }
+        if (outBtn) {
+          outBtn.onclick = async () => {
+            await setDoc(docRef, { [timeOutField]: serverTimestamp() }, { merge: true });
+            document.getElementById(outStatusId).textContent = '✔️';
+            outBtn.style.display = 'none';
+            // Show completed button
+            const rowDiv = document.getElementById(`row_${t.key || 'main'}`);
+            if (rowDiv) {
+              const completedBtn = rowDiv.querySelector('.btn-completed');
+              if (completedBtn) completedBtn.style.display = '';
+            }
+            alert('Pagtupad recorded!');
+          };
+        }
+      });
     } else {
       alert("No schedule found for this name in " + collectionName);
     }
