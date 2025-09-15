@@ -207,16 +207,24 @@
   // ---------- UI render ----------
   function renderTable(){
     tableBody.innerHTML = "";
+    if (!weekCollection || !schedules.length) {
+      tableBody.innerHTML = `<tr><td colspan='4' class='text-center text-warning'>Please select a week database to assign schedules.</td></tr>`;
+      return;
+    }
     participants.sort((a,b)=> (a.name || "").localeCompare(b.name || ""));
 
-    participants.forEach(({ id, name })=>{
+    participants.forEach(({ id, name, assignedTime1, assignedTime2 })=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${name || ""}</td>
         <td>
-          <select class="form-select schedule-select">
-            <option value="">-- Select --</option>
-            ${schedules.map(s => `<option value="${s.value}">${s.label}</option>`).join("")}
+          <select class="form-select schedule-select-1 mb-1">
+            <option value="">-- Select 1 --</option>
+            ${schedules.map(s => `<option value="${s.value}"${assignedTime1===s.value?" selected":''}>${s.label}</option>`).join("")}
+          </select>
+          <select class="form-select schedule-select-2">
+            <option value="">-- Select 2 --</option>
+            ${schedules.map(s => `<option value="${s.value}"${assignedTime2===s.value?" selected":''}>${s.label}</option>`).join("")}
           </select>
         </td>
         <td>
@@ -230,7 +238,8 @@
       const assignBtn = tr.querySelector(".assignBtn");
       const removeBtn = tr.querySelector(".removeBtn");
       const deleteBtn = tr.querySelector(".deleteBtn");
-      const select = tr.querySelector(".schedule-select");
+      const select1 = tr.querySelector(".schedule-select-1");
+      const select2 = tr.querySelector(".schedule-select-2");
 
       assignBtn.addEventListener("click", async ()=>{
         if(!weekCollection){
@@ -238,15 +247,16 @@
           statusDiv.style.color = "orange";
           return;
         }
-        const datetime = select.value;
-        if(!datetime){
-          statusDiv.textContent = `⚠ Please select a schedule for ${name}`;
+        const datetime1 = select1.value;
+        const datetime2 = select2.value;
+        if(!datetime1 && !datetime2){
+          statusDiv.textContent = `⚠ Please select at least one schedule for ${name}`;
           statusDiv.style.color = "orange";
           return;
         }
         try{
-          await setDoc(doc(db, weekCollection, name), { assignedTime: datetime }, { merge:true });
-          statusDiv.textContent = `✅ Assigned ${name} to ${datetime} in ${weekCollection}`;
+          await setDoc(doc(db, weekCollection, name), { assignedTime1: datetime1 || null, assignedTime2: datetime2 || null }, { merge:true });
+          statusDiv.textContent = `✅ Assigned ${name} to ${datetime1 && datetime2 ? datetime1+" & "+datetime2 : datetime1 || datetime2} in ${weekCollection}`;
           statusDiv.style.color = "lightgreen";
         }catch(err){
           statusDiv.textContent = `❌ Error: ${err.message}`;
@@ -260,10 +270,10 @@
           statusDiv.style.color = "orange";
           return;
         }
-        if(confirm(`Remove assigned schedule for ${name}?`)){
+        if(confirm(`Remove assigned schedules for ${name}?`)){
           try{
-            await setDoc(doc(db, weekCollection, name), { assignedTime: null }, { merge:true });
-            statusDiv.textContent = `🗑 Removed schedule for ${name} in ${weekCollection}`;
+            await setDoc(doc(db, weekCollection, name), { assignedTime1: null, assignedTime2: null }, { merge:true });
+            statusDiv.textContent = `🗑 Removed schedules for ${name} in ${weekCollection}`;
             statusDiv.style.color = "yellow";
           }catch(err){
             statusDiv.textContent = `❌ Error: ${err.message}`;
@@ -273,7 +283,7 @@
       });
 
       deleteBtn.addEventListener("click", async ()=>{
-        if(confirm(`Delete participant "${name}"?`)){
+        if(confirm(`Delete participant \"${name}\"?`)){
           try{
             await deleteDoc(doc(db, "seminar_participants", id));
             statusDiv.textContent = `🗑 Deleted ${name}`;
