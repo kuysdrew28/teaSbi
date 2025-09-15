@@ -351,15 +351,29 @@ async function loadSchedules() {
                 <thead><tr><th class="name-col">Name</th><th class="actions-col">Actions</th></tr></thead><tbody>`;
 
       grouped[schedule].forEach((member) => {
-        if (member.absent) {
-          html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
-        } else if (!member.timeIn) {
-          html += `<tr><td>${member.name}</td><td><button class="btn btn-timein w-100" onclick="timeIn('${member.name}')">Pagtanggap</button></td></tr>`;
-        } else if (!member.timeOut) {
-          html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" onclick="timeOut('${member.name}')">Pagtupad</button></td></tr>`;
-        } else {
-          html += `<tr><td>${member.name}</td><td><button class="btn btn-present w-100" disabled>Completed</button></td></tr>`;
-        }
+        // For each assigned schedule, render a row
+        let scheduleTimes = [];
+        if (member.assignedTime1 === Object.keys(scheduleMap).find(k => scheduleMap[k] === schedule)) scheduleTimes.push({key: '1', value: member.assignedTime1});
+        if (member.assignedTime2 === Object.keys(scheduleMap).find(k => scheduleMap[k] === schedule)) scheduleTimes.push({key: '2', value: member.assignedTime2});
+        // fallback legacy
+        if (!scheduleTimes.length && member.assignedTime === Object.keys(scheduleMap).find(k => scheduleMap[k] === schedule)) scheduleTimes.push({key: '', value: member.assignedTime});
+        if (!scheduleTimes.length) scheduleTimes.push({key: '', value: null}); // fallback to show at least one row
+
+        scheduleTimes.forEach((sched, idx) => {
+          const timeInField = sched.key ? `timeIn${sched.key}` : 'timeIn';
+          const timeOutField = sched.key ? `timeOut${sched.key}` : 'timeOut';
+          const timeInVal = member[timeInField];
+          const timeOutVal = member[timeOutField];
+          if (member.absent) {
+            html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
+          } else if (!timeInVal) {
+            html += `<tr><td>${member.name}</td><td><button class="btn btn-timein w-100" onclick="timeIn('${member.name}','${sched.key}')">Pagtanggap</button></td></tr>`;
+          } else if (!timeOutVal) {
+            html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" onclick="timeOut('${member.name}','${sched.key}')">Pagtupad</button></td></tr>`;
+          } else {
+            html += `<tr><td>${member.name}</td><td><button class="btn btn-present w-100" disabled>Completed</button></td></tr>`;
+          }
+        });
       });
 
       html += "</tbody></table></div>";
@@ -399,15 +413,17 @@ async function loadSchedules() {
 /* -----------------------
    Actions
 -------------------------*/
-window.timeIn = async function (name) {
+window.timeIn = async function (name, key) {
   showLoading();
-  await updateDoc(doc(db, collectionName, name), { timeIn: new Date().toISOString() });
+  const field = key ? `timeIn${key}` : 'timeIn';
+  await updateDoc(doc(db, collectionName, name), { [field]: new Date().toISOString() });
   loadSchedules();
 };
 
-window.timeOut = async function (name) {
+window.timeOut = async function (name, key) {
   showLoading();
-  await updateDoc(doc(db, collectionName, name), { timeOut: new Date().toISOString() });
+  const field = key ? `timeOut${key}` : 'timeOut';
+  await updateDoc(doc(db, collectionName, name), { [field]: new Date().toISOString() });
   loadSchedules();
 };
 </script>
