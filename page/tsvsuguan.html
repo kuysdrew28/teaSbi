@@ -298,9 +298,11 @@ async function loadSchedules() {
   const updates = [];
   snap.forEach((docSnap) => {
     const data = docSnap.data();
-    let assignedKey;
-    const at = data.assignedTime;
-    let assignedArr = Array.isArray(at) ? at : (at ? [at] : []);
+    let assignedArr = [];
+    // Support both assignedTime1 and assignedTime2 (and legacy assignedTime)
+    if (data.assignedTime1) assignedArr.push(data.assignedTime1);
+    if (data.assignedTime2) assignedArr.push(data.assignedTime2);
+    if (data.assignedTime && !assignedArr.length) assignedArr.push(data.assignedTime); // fallback legacy
     let absent = data.absent;
     let timeIn = data.timeIn;
     let now = new Date();
@@ -317,11 +319,18 @@ async function loadSchedules() {
       updates.push(updateDoc(doc(db, collectionName, docSnap.id), { absent: true }));
       absent = true;
     }
-    // For display, use first assignedKey for grouping
-    assignedKey = assignedArr[0] || null;
-    const scheduleName = (assignedKey && scheduleMap[assignedKey]) ? scheduleMap[assignedKey] : "Unassigned";
-    if (!grouped[scheduleName]) grouped[scheduleName] = [];
-    grouped[scheduleName].push({ name: docSnap.id, ...data, absent });
+    // For display, group under each assigned schedule
+    if (assignedArr.length) {
+      assignedArr.forEach(assignedKey => {
+        const scheduleName = (assignedKey && scheduleMap[assignedKey]) ? scheduleMap[assignedKey] : "Unassigned";
+        if (!grouped[scheduleName]) grouped[scheduleName] = [];
+        grouped[scheduleName].push({ name: docSnap.id, ...data, absent });
+      });
+    } else {
+      // No assigned schedule
+      if (!grouped["Unassigned"]) grouped["Unassigned"] = [];
+      grouped["Unassigned"].push({ name: docSnap.id, ...data, absent });
+    }
   });
   if (updates.length) await Promise.all(updates);
 
@@ -373,7 +382,12 @@ async function loadSchedules() {
               <thead><tr><th class="name-col">Name</th><th>Assigned Time (raw)</th></tr></thead><tbody>`;
 
     grouped["Unassigned"].forEach((member) => {
-      html += `<tr><td>${member.name}</td><td>${member.assignedTime ?? "<i>none</i>"}</td></tr>`;
+      // Show both assignedTime1 and assignedTime2 if present
+      let times = [];
+      if (member.assignedTime1) times.push(member.assignedTime1);
+      if (member.assignedTime2) times.push(member.assignedTime2);
+      if (member.assignedTime && !times.length) times.push(member.assignedTime);
+      html += `<tr><td>${member.name}</td><td>${times.length ? times.join('<br>') : "<i>none</i>"}</td></tr>`;
     });
 
     html += "</tbody></table></div>";
