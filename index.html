@@ -1,63 +1,5 @@
-</script>
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    const firebaseConfigGate1 = {
-        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
-        authDomain: "virac-tsv.firebaseapp.com",
-        projectId: "virac-tsv",
-        storageBucket: "virac-tsv.appspot.com",
-        messagingSenderId: "455316064834",
-        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
-    };
-    try { initializeApp(firebaseConfigGate1); } catch (e) {}
-    const authGate1 = getAuth();
-    const dbGate1 = getFirestore();
-    onAuthStateChanged(authGate1, async (user) => {
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
-                const userRef = doc(dbGate1, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
-                    alert("Access denied. Only admitted users can view this page.");
-                    await signOut(authGate1);
-                    window.location.href = "login.html";
-                }
-    });
-</script>
-</script>
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    const firebaseConfigGate2 = {
-        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
-        authDomain: "virac-tsv.firebaseapp.com",
-        projectId: "virac-tsv",
-        storageBucket: "virac-tsv.appspot.com",
-        messagingSenderId: "455316064834",
-        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
-    };
-    try { initializeApp(firebaseConfigGate2); } catch (e) {}
-    const authGate2 = getAuth();
-    const dbGate2 = getFirestore();
-    onAuthStateChanged(authGate2, async (user) => {
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
-                const userRef = doc(dbGate2, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
-                    alert("Access denied. Only admitted users can view this page.");
-                    await signOut(authGate2);
-                    window.location.href = "login.html";
-                }
-    });
-</script>
+
+
 <!DOCTYPE html>
 <html lang="zxx">
 
@@ -69,7 +11,7 @@
     <meta name="keywords" content="Gym, unica, creative, html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-       <meta name="google-adsense-account" content="ca-pub-5710842624363208">
+    <meta name="google-adsense-account" content="ca-pub-5710842624363208">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5710842624363208"
      crossorigin="anonymous"></script>
     <title>ViracTSV | Home</title>
@@ -95,7 +37,6 @@
         <div class="loader"></div>
     </div>
 
-    
     <!-- Offcanvas Menu Section Begin -->
     <div class="offcanvas-menu-overlay"></div>
     <div class="offcanvas-menu-wrapper">
@@ -126,16 +67,7 @@
         </div>
     </div>
     <!-- Offcanvas Menu Section End -->
-  <!-- Example Ad Placement -->
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-5710842624363208"
-       data-ad-slot="1234567890"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
+
     <!-- Header Section Begin -->
     <header class="header-section">
         <div class="container-fluid">
@@ -415,6 +347,64 @@
   ViracTSV | Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved <br>Special thanks <i class="fa fa-heart" aria-hidden="true"></i> to <a href="https://colorlib.com" target="_blank">Colorlib</a>
   <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
                     </div>
+                    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfigGate1 = {
+        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+        authDomain: "virac-tsv.firebaseapp.com",
+        projectId: "virac-tsv",
+        storageBucket: "virac-tsv.appspot.com",
+        messagingSenderId: "455316064834",
+        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+    try { initializeApp(firebaseConfigGate1); } catch (e) {}
+    const authGate1 = getAuth();
+    const dbGate1 = getFirestore();
+    onAuthStateChanged(authGate1, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+                const userRef = doc(dbGate1, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+                    alert("Access denied. Only admitted users can view this page.");
+                    await signOut(authGate1);
+                    window.location.href = "login.html";
+                }
+    });
+</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfigGate2 = {
+        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+        authDomain: "virac-tsv.firebaseapp.com",
+        projectId: "virac-tsv",
+        storageBucket: "virac-tsv.appspot.com",
+        messagingSenderId: "455316064834",
+        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+    try { initializeApp(firebaseConfigGate2); } catch (e) {}
+    const authGate2 = getAuth();
+    const dbGate2 = getFirestore();
+    onAuthStateChanged(authGate2, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+                const userRef = doc(dbGate2, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+                    alert("Access denied. Only admitted users can view this page.");
+                    await signOut(authGate2);
+                    window.location.href = "login.html";
+                }
+    });
+</script>
                                                     <div style="margin-top:10px;">
                                                         <button id="logout-footer-btn" class="btn btn-danger" style="display:none;">Log Out</button>
                                                     </div>
