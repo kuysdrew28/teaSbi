@@ -364,12 +364,37 @@ async function loadSchedules() {
           const timeOutField = sched.key ? `timeOut${sched.key}` : 'timeOut';
           const timeInVal = member[timeInField];
           const timeOutVal = member[timeOutField];
+          // Determine assigned time for this schedule
+          let assignedTimeRaw = sched.value;
+          let assignedDate = null;
+          if (typeof assignedTimeRaw === "string") {
+            assignedDate = new Date(assignedTimeRaw);
+          } else if (assignedTimeRaw && typeof assignedTimeRaw.toDate === "function") {
+            assignedDate = assignedTimeRaw.toDate();
+          }
+          const now = new Date();
           if (member.absent) {
             html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
           } else if (!timeInVal) {
             html += `<tr><td>${member.name}</td><td><button class="btn btn-timein w-100" onclick="timeIn('${member.name}','${sched.key}')">Pagtanggap</button></td></tr>`;
           } else if (!timeOutVal) {
-            html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" onclick="timeOut('${member.name}','${sched.key}')">Pagtupad</button></td></tr>`;
+            // Only show Pagtupad if within 2 hours before assigned time and not after
+            let showPagtupad = false;
+            if (assignedDate) {
+              const diffMs = assignedDate - now;
+              const diffHours = diffMs / (1000 * 60 * 60);
+              if (diffHours <= 2 && diffHours >= 0) {
+                showPagtupad = true;
+              }
+            } else {
+              // If no assigned time, fallback to show
+              showPagtupad = true;
+            }
+            if (showPagtupad) {
+              html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" onclick="timeOut('${member.name}','${sched.key}')">Pagtupad</button></td></tr>`;
+            } else {
+              html += `<tr><td>${member.name}</td><td><button class="btn btn-timeout w-100" disabled>Pagtupad</button></td></tr>`;
+            }
           } else {
             html += `<tr><td>${member.name}</td><td><button class="btn btn-present w-100" disabled>Completed</button></td></tr>`;
           }
