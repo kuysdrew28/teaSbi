@@ -310,7 +310,18 @@ async function loadSchedules() {
     // Check each assigned schedule
     assignedArr.forEach(scheduleTime => {
       let scheduleDate = new Date(scheduleTime);
-      if (scheduleDate < now && !timeIn) {
+      // Check for timeOut for each schedule
+      let hasTimeOut = false;
+      // Support multiple timeOut fields
+      if (
+        (data.timeOut && (scheduleTime === data.assignedTime)) ||
+        (data.timeOut1 && (scheduleTime === data.assignedTime1)) ||
+        (data.timeOut2 && (scheduleTime === data.assignedTime2))
+      ) {
+        hasTimeOut = true;
+      }
+      // If schedule has passed and no timeOut, mark absent
+      if (scheduleDate < now && !hasTimeOut) {
         autoAbsent = true;
       }
     });
@@ -318,6 +329,12 @@ async function loadSchedules() {
       // Mark as absent in Firestore
       updates.push(updateDoc(doc(db, collectionName, docSnap.id), { absent: true }));
       absent = true;
+    } else if (!autoAbsent) {
+      // If user has timeIn or timeOut, clear absent
+      if (absent) {
+        updates.push(updateDoc(doc(db, collectionName, docSnap.id), { absent: false }));
+        absent = false;
+      }
     }
     // For display, group under each assigned schedule
     if (assignedArr.length) {
