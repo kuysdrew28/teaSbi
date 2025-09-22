@@ -401,11 +401,17 @@
 
     function deriveStatus(rec){
       // Logical status rules:
-      // Present if timeIn exists and absent !== true
-      const hasIn = !!rec.timeIn;
+      // Absent if marked absent OR if any assigned schedule is missing timeOut
       const isAbsent = rec.absent === true;
       if (isAbsent) return 'absent';
-      if (hasIn) return 'present';
+      // Check all assigned schedules for missing timeOut
+      const assignedTimes = [rec.assignedTime, rec.assignedTime1, rec.assignedTime2].filter(Boolean);
+      const timeOuts = [rec.timeOut, rec.timeOut1, rec.timeOut2];
+      for (let i = 0; i < assignedTimes.length; i++) {
+        if (!timeOuts[i]) return 'absent';
+      }
+      // Present if any timeIn exists
+      if (rec.timeIn || rec.timeIn1 || rec.timeIn2) return 'present';
       return 'unknown';
     }
 
@@ -413,27 +419,39 @@
       recordsBody.innerHTML = '';
       const frag = document.createDocumentFragment();
       let shown = 0;
-      for (const r of rows){
+        for (const r of rows){
         // filter by status
         const f = statusFilter.value;
         if (f !== 'all' && deriveStatus(r) !== f) continue;
         // search filter
         const q = searchInput.value.trim().toLowerCase();
         if (q){
-          const hay = `${r.name} ${r.assignedTime || ''}`.toLowerCase();
+          const hay = `${r.name} ${r.assignedTime || ''} ${r.assignedTime1 || ''} ${r.assignedTime2 || ''}`.toLowerCase();
           if (!hay.includes(q)) continue;
         }
         const tr = document.createElement('tr');
         const status = deriveStatus(r);
-        tr.innerHTML = `
-          <td>${escapeHtml(r.name)}</td>
-          <td>${escapeHtml(r.assignedTime || '')}</td>
-          <td>${escapeHtml(asDateStr(r.timeIn))}</td>
-          <td>${escapeHtml(asDateStr(r.timeOut))}</td>
-          <td>${r.absent === true ? '<span class="badge badge-absent">Yes</span>' : '<span class="badge bg-secondary">No</span>'}</td>
-          <td>
-            ${status === 'present' ? '<span class="badge badge-present">Present</span>' : status === 'absent' ? '<span class="badge badge-absent">Absent</span>' : '<span class="badge badge-unknown">Unknown</span>'}
-          </td>`;
+            tr.innerHTML = `
+              <td>${escapeHtml(r.name)}</td>
+              <td>
+                ${r.assignedTime ? `<div><b>Schedule:</b> ${escapeHtml(r.assignedTime)}</div>` : ''}
+                ${r.assignedTime1 ? `<div><b>Schedule 1:</b> ${escapeHtml(r.assignedTime1)}</div>` : ''}
+                ${r.assignedTime2 ? `<div><b>Schedule 2:</b> ${escapeHtml(r.assignedTime2)}</div>` : ''}
+              </td>
+              <td>
+                ${r.timeIn ? `<div><b>TimeIn:</b> ${escapeHtml(asDateStr(r.timeIn))}</div>` : ''}
+                ${r.timeIn1 ? `<div><b>TimeIn1:</b> ${escapeHtml(asDateStr(r.timeIn1))}</div>` : ''}
+                ${r.timeIn2 ? `<div><b>TimeIn2:</b> ${escapeHtml(asDateStr(r.timeIn2))}</div>` : ''}
+              </td>
+              <td>
+                ${r.timeOut ? `<div><b>TimeOut:</b> ${escapeHtml(asDateStr(r.timeOut))}</div>` : ''}
+                ${r.timeOut1 ? `<div><b>TimeOut1:</b> ${escapeHtml(asDateStr(r.timeOut1))}</div>` : ''}
+                ${r.timeOut2 ? `<div><b>TimeOut2:</b> ${escapeHtml(asDateStr(r.timeOut2))}</div>` : ''}
+              </td>
+              <td>${r.absent === true ? '<span class="badge badge-absent">Yes</span>' : '<span class="badge bg-secondary">No</span>'}</td>
+              <td>
+                ${status === 'present' ? '<span class="badge badge-present">Present</span>' : status === 'absent' ? '<span class="badge badge-absent">Absent</span>' : '<span class="badge badge-unknown">Unknown</span>'}
+              </td>`;
         frag.appendChild(tr);
         shown++;
       }
@@ -447,17 +465,43 @@
 
     function recomputeAndRender(){
       const total = currentRows.length;
-      const present = currentRows.filter(r => deriveStatus(r) === 'present').length;
-      const absent = currentRows.filter(r => deriveStatus(r) === 'absent').length;
+      // Count present/absent for all assigned schedules
+      let present = 0, absent = 0;
+      const bySchedule = new Map();
+      for (const r of currentRows){
+        let keys = [];
+        let timeIns = [];
+        let timeOuts = [];
+        if (r.assignedTime) {
+          keys.push(r.assignedTime);
+          timeIns.push(r.timeIn);
+          timeOuts.push(r.timeOut);
+        }
+        if (r.assignedTime1) {
+          keys.push(r.assignedTime1);
+          timeIns.push(r.timeIn1);
+          timeOuts.push(r.timeOut1);
+        }
+        if (r.assignedTime2) {
+          keys.push(r.assignedTime2);
+          timeIns.push(r.timeIn2);
+          timeOuts.push(r.timeOut2);
+        }
+        if (keys.length === 0) keys.push('(Unassigned)');
+        for (let i = 0; i < keys.length; i++) {
+          const key = keys[i];
+          bySchedule.set(key, (bySchedule.get(key) || 0) + 1);
+          // Present if timeIn and timeOut exist for this schedule
+          if (timeIns[i] && timeOuts[i]) {
+            present++;
+          } else {
+            absent++;
+          }
+        }
+      }
       totalCountEl.textContent = total;
       presentCountEl.textContent = present;
       absentCountEl.textContent = absent;
-
-      const bySchedule = new Map();
-      for (const r of currentRows){
-        const key = r.assignedTime || '(Unassigned)';
-        bySchedule.set(key, (bySchedule.get(key) || 0) + 1);
-      }
       updateCharts(present, absent, bySchedule);
       renderTable(currentRows);
     }
@@ -491,9 +535,15 @@
               id: doc.id,
               name: doc.id, // Using doc id as the student's name as per your structure
               assignedTime: data.assignedTime ?? '',
+              assignedTime1: data.assignedTime1 ?? '',
+              assignedTime2: data.assignedTime2 ?? '',
               absent: data.absent ?? false,
               timeIn: data.timeIn ?? null,
               timeOut: data.timeOut ?? null,
+              timeIn1: data.timeIn1 ?? null,
+              timeOut1: data.timeOut1 ?? null,
+              timeIn2: data.timeIn2 ?? null,
+              timeOut2: data.timeOut2 ?? null,
             });
           });
           currentRows = rows.sort((a,b)=> a.name.localeCompare(b.name));
