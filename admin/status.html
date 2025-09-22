@@ -264,11 +264,10 @@
               <table class="table table-sm align-middle" id="recordsTable">
                 <thead>
                   <tr>
-                    <th style="width:30%">Name</th>
-                    <th style="width:20%">Assigned Time</th>
-                    <th style="width:15%">Pagtanggap</th>
-                    <th style="width:15%">Pagtupad</th>
-                    <th style="width:10%">Absent</th>
+                    <th style="width:35%">Name</th>
+                    <th style="width:25%">Assigned Time</th>
+                    <th style="width:20%">Pagtanggap</th>
+                    <th style="width:20%">Pagtupad</th>
                     <th style="width:10%">Status</th>
                   </tr>
                 </thead>
@@ -448,7 +447,6 @@
                 ${r.timeOut1 ? `<div><b>TimeOut1:</b> ${escapeHtml(asDateStr(r.timeOut1))}</div>` : ''}
                 ${r.timeOut2 ? `<div><b>TimeOut2:</b> ${escapeHtml(asDateStr(r.timeOut2))}</div>` : ''}
               </td>
-              <td>${r.absent === true ? '<span class="badge badge-absent">Yes</span>' : '<span class="badge bg-secondary">No</span>'}</td>
               <td>
                 ${status === 'present' ? '<span class="badge badge-present">Present</span>' : status === 'absent' ? '<span class="badge badge-absent">Absent</span>' : '<span class="badge badge-unknown">Unknown</span>'}
               </td>`;
