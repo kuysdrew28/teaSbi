@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zxx">
 
@@ -5,14 +7,15 @@
     <meta charset="UTF-8">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="img/logo2.png">
-    <meta name="google-adsense-account" content="ca-pub-5710842624363208">
     <meta name="description" content="ViracTSV Management System">
     <meta name="keywords" content="Gym, unica, creative, html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>ViracTSV | Home</title>
+    <meta name="google-adsense-account" content="ca-pub-5710842624363208">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5710842624363208"
      crossorigin="anonymous"></script>
+    <title>ViracTSV | Home</title>
+
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Oswald:300,400,500,600,700&display=swap" rel="stylesheet">
@@ -120,7 +123,7 @@
                             <div class="hi-text">
                                 <span>ENHANCED Version</span>
                                 <h1>Virac <strong>TSV</strong> Management System</h1>
-                                <a href="#" class="primary-btn">Get info</a>
+                                <a href="#" class="primary-btn" id="getInfoBtn">Get info</a>
                             </div>
                         </div>
                     </div>
@@ -130,7 +133,7 @@
     <!-- Hero Section End -->
 
     <!-- ChoseUs Section Begin -->
-    <section class="choseus-section spad">
+    <section class="choseus-section spad" id="choseUsSection">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -429,18 +432,6 @@
                                                                                                                     window.location.href = 'login.html';
                                                                                                                 });
                                                                                                         </script>
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5710842624363208"
-     crossorigin="anonymous"></script>
-<!-- adhorizontal -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-5710842624363208"
-     data-ad-slot="1116766115"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
                                                                         </div>
             </div>
         </div>
@@ -496,6 +487,16 @@
         });
 </script>
 
+<script>
+// Smooth scroll to ChoseUs section when Get Info is clicked
+document.getElementById('getInfoBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    var section = document.getElementById('choseUsSection');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 </body>
 
 </html>
