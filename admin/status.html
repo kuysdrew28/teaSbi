@@ -400,15 +400,12 @@
 
     function deriveStatus(rec){
       // Logical status rules:
-      // Absent if marked absent OR if any assigned schedule is missing timeOut
-      const isAbsent = rec.absent === true;
-      if (isAbsent) return 'absent';
-      // Check all assigned schedules for missing timeOut
-      const assignedTimes = [rec.assignedTime, rec.assignedTime1, rec.assignedTime2].filter(Boolean);
-      const timeOuts = [rec.timeOut, rec.timeOut1, rec.timeOut2];
-      for (let i = 0; i < assignedTimes.length; i++) {
-        if (!timeOuts[i]) return 'absent';
-      }
+      // Absent if marked absent OR if any assignedTime1/assignedTime2 exists but missing its corresponding timeOut1/timeOut2
+      if (rec.absent === true) return 'absent';
+      if (rec.assignedTime1 && !rec.timeOut1) return 'absent';
+      if (rec.assignedTime2 && !rec.timeOut2) return 'absent';
+      // Also absent if assignedTime (main) exists but missing timeOut
+      if (rec.assignedTime && !rec.timeOut) return 'absent';
       // Present if any timeIn exists
       if (rec.timeIn || rec.timeIn1 || rec.timeIn2) return 'present';
       return 'unknown';
