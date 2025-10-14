@@ -431,6 +431,51 @@
                                                                                                                     await signOut(logoutAuthIndex);
                                                                                                                     window.location.href = 'login.html';
                                                                                                                 });
+                                                                                                            
+                                                                                                            // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) ||
+        (e.ctrlKey && e.key === "U")
+    ) {
+        e.preventDefault();
+        alert("Developer tools are disabled!");
+        return false;
+    }
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    alert("Right-click is disabled!");
+});
+
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Disable copy, cut, and paste
+document.addEventListener('copy', function(e) {
+    e.preventDefault();
+    alert("Copying is disabled!");
+});
+
+document.addEventListener('cut', function(e) {
+    e.preventDefault();
+    alert("Cutting is disabled!");
+});
+
+document.addEventListener('paste', function(e) {
+    e.preventDefault();
+    alert("Pasting is disabled!");
+});
+
+// Optional: Disable dragging of content (e.g., images)
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
                                                                                                         </script>
                                                                         </div>
             </div>
