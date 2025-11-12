@@ -246,8 +246,8 @@ const scheduleMap = {
 const scheduleGroups = {
   "MIDWEEK - PAGSAMBA": ["Miyerkules 6:00AM", "Huwebes 6:00AM", "Huwebes 7:30PM"],
   "WEEKEND - PAGSAMBA": ["Sabado 6:00AM", "Linggo 6:00AM", "PNK 8:00AM", "Linggo 10:00AM"],
-  "PAMAMAHAYAG" : ["Sabado 9:00AM"],
-  "TANGING PAGTITIPON" : ["Lunes 7:00PM" , "Martes 7:00PM", "Biyernes 7:00PM"],
+  "TANGING PAGTITIPON" : ["Sabado 9:00AM"],
+  "PAMAMAHAYAG" : ["Lunes 7:00PM", "Martes 7:00PM" , "Biyernes 7:00PM"],
   "BAUTISMO" : ["Sabado 10:00AM"],
 };
 
@@ -305,8 +305,10 @@ async function loadSchedules() {
     if (data.assignedTime && !assignedArr.length) assignedArr.push(data.assignedTime); // fallback legacy
     let absent = data.absent;
     let timeIn = data.timeIn;
-    let now = new Date();
-    let autoAbsent = false;
+  let now = new Date();
+  let autoAbsent = false;
+  // Auto time-in updates for this document
+  let autoTimeInField = null;
     // Check each assigned schedule
     assignedArr.forEach(scheduleTime => {
       let scheduleDate = new Date(scheduleTime);
@@ -324,6 +326,18 @@ async function loadSchedules() {
       if (scheduleDate < now && !hasTimeOut) {
         autoAbsent = true;
       }
+      // Auto time-in if within 4 hours before assigned time and no timeIn yet
+      const diffMs = scheduleDate - now;
+      const diffHours = diffMs / (1000 * 60 * 60);
+      // Determine corresponding timeIn field name for this scheduleTime
+      let thisKey = '';
+      if (scheduleTime === data.assignedTime1) thisKey = '1';
+      else if (scheduleTime === data.assignedTime2) thisKey = '2';
+      const timeInFieldName = thisKey ? `timeIn${thisKey}` : 'timeIn';
+      if (diffHours <= 4 && diffHours >= 0 && !data[timeInFieldName] && !autoAbsent && !data.absent) {
+        // schedule within 4 hours, set timeIn if not present
+        autoTimeInField = timeInFieldName;
+      }
     });
     if (autoAbsent && !absent) {
       // Mark as absent in Firestore
@@ -336,6 +350,12 @@ async function loadSchedules() {
         absent = false;
       }
     }
+    // Apply auto time-in if determined
+    if (autoTimeInField) {
+      const payload = { [autoTimeInField]: new Date().toISOString() };
+      updates.push(updateDoc(doc(db, collectionName, docSnap.id), payload));
+    }
+
     // For display, group under each assigned schedule
     if (assignedArr.length) {
       assignedArr.forEach(assignedKey => {
@@ -471,5 +491,3 @@ window.timeOut = async function (name, key) {
 </script>
 </body>
 </html>
-
-
