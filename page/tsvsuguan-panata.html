@@ -279,6 +279,7 @@ async function loadSchedules() {
   grouped["Unassigned"] = [];
 
   const snap = await getDocs(collection(db, collectionName));
+  const updates = [];
 
   // For debugging: show the computed schedule keys
   console.log("Computed scheduleMap keys (local):", Object.keys(scheduleMap));
@@ -333,6 +334,16 @@ async function loadSchedules() {
           assignedDate = assignedTime.toDate();
         }
         const now = new Date();
+        // Auto time-in: if within 4 hours before assigned time and no timeIn yet
+        if (assignedDate) {
+          const diffMs = assignedDate - now;
+          const diffHours = diffMs / (1000 * 60 * 60);
+          if (diffHours <= 4 && diffHours >= 0 && !data.timeIn && !data.absent) {
+            updates.push(updateDoc(doc(db, collectionName, docSnap.id), { timeIn: new Date().toISOString() }));
+            // reflect in local object for rendering
+            data.timeIn = new Date().toISOString();
+          }
+        }
         // If assigned time has passed and no timeIn or timeOut, show Absent
         if ((assignedDate && now > assignedDate) && !member.timeIn && !member.timeOut) {
           html += `<tr><td>${member.name}</td><td><button class="btn btn-absent w-100" disabled>Absent</button></td></tr>`;
@@ -368,6 +379,8 @@ async function loadSchedules() {
       scheduleContainer.appendChild(card);
     });
   }
+
+  if (updates.length) await Promise.all(updates);
 
   // Render Unassigned at the end if it has members
   if (grouped["Unassigned"] && grouped["Unassigned"].length) {
