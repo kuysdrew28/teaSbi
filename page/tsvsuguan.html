@@ -310,6 +310,7 @@ async function loadSchedules() {
   // Auto time-in updates for this document
   let autoTimeInField = null;
     // Check each assigned schedule
+    const autoTimeInPayload = {}; // collect any timeIn1/timeIn2 fields to set
     assignedArr.forEach(scheduleTime => {
       let scheduleDate = new Date(scheduleTime);
       // Check for timeOut for each schedule
@@ -326,17 +327,17 @@ async function loadSchedules() {
       if (scheduleDate < now && !hasTimeOut) {
         autoAbsent = true;
       }
-      // Auto time-in if within 4 hours before assigned time and no timeIn yet
+      // Auto time-in if within 2 hours before assignedTime1/assignedTime2 and no timeIn1/timeIn2 yet
       const diffMs = scheduleDate - now;
       const diffHours = diffMs / (1000 * 60 * 60);
-      // Determine corresponding timeIn field name for this scheduleTime
-      let thisKey = '';
-      if (scheduleTime === data.assignedTime1) thisKey = '1';
-      else if (scheduleTime === data.assignedTime2) thisKey = '2';
-      const timeInFieldName = thisKey ? `timeIn${thisKey}` : 'timeIn';
-      if (diffHours <= 4 && diffHours >= 0 && !data[timeInFieldName] && !autoAbsent && !data.absent) {
-        // schedule within 4 hours, set timeIn if not present
-        autoTimeInField = timeInFieldName;
+      // Only apply for assignedTime1 and assignedTime2 (no legacy fallback)
+      if (!autoAbsent && !data.absent) {
+        if (scheduleTime === data.assignedTime1 && diffHours <= 2 && diffHours >= 0 && !data.timeIn1) {
+          autoTimeInPayload['timeIn1'] = new Date().toISOString();
+        }
+        if (scheduleTime === data.assignedTime2 && diffHours <= 2 && diffHours >= 0 && !data.timeIn2) {
+          autoTimeInPayload['timeIn2'] = new Date().toISOString();
+        }
       }
     });
     if (autoAbsent && !absent) {
@@ -350,10 +351,11 @@ async function loadSchedules() {
         absent = false;
       }
     }
-    // Apply auto time-in if determined
-    if (autoTimeInField) {
-      const payload = { [autoTimeInField]: new Date().toISOString() };
-      updates.push(updateDoc(doc(db, collectionName, docSnap.id), payload));
+    // Apply auto time-in if determined (combine into one update)
+    if (Object.keys(autoTimeInPayload).length) {
+      updates.push(updateDoc(doc(db, collectionName, docSnap.id), autoTimeInPayload));
+      // reflect in local data for rendering
+      Object.assign(data, autoTimeInPayload);
     }
 
     // For display, group under each assigned schedule
