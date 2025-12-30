@@ -162,6 +162,8 @@
       color: var(--secondary-orange);
     }
     .status-inactive { color: #dc2626 !important; }
+    .badge-active { background: #16a34a; color: #fff; }
+    .badge-inactive { background: #dc2626; color: #fff; }
     /* full-bleed helper: make an element span the full viewport width */
     .full-bleed {
       position: relative;
@@ -204,6 +206,12 @@
           </div>
           <div class="card-body">
             <div id="monthlyHint" class="small-muted mb-2">Select a month and click Load Month.</div>
+            <div id="monthlySummary" class="d-flex gap-3 align-items-center mb-2">
+              <div class="small-muted">Active: <span id="activeCount" class="badge badge-active">0</span></div>
+              <div class="small-muted">Inactive: <span id="inactiveCount" class="badge badge-inactive">0</span></div>
+               <div class="small-muted">Trainee: <span id="traineeCount" class="badge badge-trainee">4</span></div>
+            
+            </div>
             <div class="table-responsive" id="monthlyContainer"></div>
           </div>
         </div>
@@ -242,6 +250,8 @@
     const loadMonthBtn = document.getElementById('loadMonthBtn');
     const monthlyContainer = document.getElementById('monthlyContainer');
     const monthlyHint = document.getElementById('monthlyHint');
+    const activeCountEl = document.getElementById('activeCount');
+    const inactiveCountEl = document.getElementById('inactiveCount');
 
     // Populate month/year selectors
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -339,6 +349,22 @@
         });
       }catch(e){ console.warn('monthly read error', e); }
 
+      // update summary counts (Active/Inactive)
+      function updateSummaryCounts(){
+        let active = 0, inactive = 0;
+        for (const [nm, mm] of members){
+          const manualVal = (mm.manualStatus === 'REGULAR') ? 'ACTIVE' : mm.manualStatus;
+          const hasData2 = mm.totalScheduled > 0 || Object.keys(mm.days || {}).length > 0;
+          const manualExists = !!mm.manualStatus;
+          // skip members without any attendance data and no manual status override
+          if (!hasData2 && !manualExists) continue;
+          const status = manualVal || (mm.absents >= 3 ? 'INACTIVE' : 'ACTIVE');
+          if (status === 'INACTIVE') inactive++; else if (status === 'ACTIVE') active++;
+        }
+        activeCountEl.textContent = active;
+        inactiveCountEl.textContent = inactive;
+      }
+
       // Build table
       const daysInMonth = new Date(year, monthIndex+1, 0).getDate();
       // determine which days actually have any data (present/absent)
@@ -366,10 +392,11 @@
       for (const name of names){
         const m = members.get(name);
         const tr = document.createElement('tr');
-        // prepare initial status (manual override or computed fallback)
+        // prepare initial status (manual override or computed fallback). If no attendance data and no manual status, don't default to ACTIVE.
         const manualVal = (m.manualStatus === 'REGULAR') ? 'ACTIVE' : m.manualStatus;
-        const initialStatus = manualVal || (m.absents >= 3 ? 'INACTIVE' : 'ACTIVE');
-        // checkbox cell + name (name cell carries status class)
+        const hasData = m.totalScheduled > 0 || Object.keys(m.days || {}).length > 0;
+        const initialStatus = manualVal || (hasData ? (m.absents >= 3 ? 'INACTIVE' : 'ACTIVE') : null);
+        // checkbox cell + name (name cell carries status class only when INACTIVE)
         let nameClass = initialStatus === 'INACTIVE' ? 'status-inactive' : '';
         let row = `<td style="text-align:center"><input type="checkbox" class="row-select" data-name="${escapeHtml(name)}" /></td><td class="name-cell ${nameClass}" data-name="${escapeHtml(name)}"><strong>${escapeHtml(name)}</strong></td>`;
         for (const d of activeDays){
@@ -387,6 +414,8 @@
       }
       tbl.appendChild(tbody);
       monthlyContainer.appendChild(tbl);
+      // update counts after rendering
+      updateSummaryCounts();
       // Insert edit toolbar above table (allows bulk manual edits)
       const toolbar = document.createElement('div');
       toolbar.className = 'd-flex gap-2 mb-2 align-items-center';
@@ -534,7 +563,10 @@
           // update UI immediately without waiting for full reload
           const nc = monthlyContainer.querySelector(`.name-cell[data-name="${CSS.escape(nm)}"]`);
           if (nc){ if (val === 'INACTIVE') nc.classList.add('status-inactive'); else nc.classList.remove('status-inactive'); }
-          // reload to recompute counts
+          // update local members map and counts immediately
+          const mref = members.get(nm);
+          if (mref) { mref.manualStatus = val; updateSummaryCounts(); }
+          // reload to recompute counts and table
           loadMonthlyAttendance(year, monthIndex);
         });
       });
