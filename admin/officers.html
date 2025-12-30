@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TSV Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+        :root {
+      --primary-orange: #ff7e29;
+      --secondary-orange: #ff9e4d;
+      --dark-gray: #1a1a1a;
+      --light-gray: #f5f5f5;
+      --bg-dark: #121212;
+      --text-light: #e0e0e0;
+      --card-bg: #1e1e1e;
+      --transition-ease: 0.3s ease;
+    }
+    body { background: #00030a; color: #e2e8f0; }
+    .card { background: #000206; border: 1px solid #1f2937; }
+    .form-control, .form-select { background: #0b1220; color: #e5e7eb; border-color: #1f2937; }
+    .form-control:focus, .form-select:focus { background: #0b1220; color: #fff; border-color: #3b82f6; box-shadow: 0 0 0 .2rem rgba(59,130,246,.25); }
+    .table { color: #e5e7eb; }
+    .table thead th { color: #93c5fd; border-bottom-color: #374151; }
+    .table tbody tr { border-color: #1f2937; }
+    .badge-present { background: #16a34a; }
+    .badge-absent { background: #dc2626; }
+    .badge-unknown { background: #6b7280; }
+    .small-muted { color:#94a3b8; font-size:.9rem; }
+    .display-6 {
+  color: #dfdddd !important; /* force white text */
+  font-weight: bold;
+}
+    #weekTitle {
+  color: #dfdddd !important; /* force white text */
+  font-weight: bold;
+}
+    .link-lightish { color:#93c5fd; text-decoration:none; }
+    .link-lightish:hover { text-decoration:underline; }
+    .sticky-top-bar { position: sticky; top: 0; z-index: 1030; background: linear-gradient(180deg, rgba(15,23,42,.98), rgba(15,23,42,.85)); backdrop-filter: blur(4px); border-bottom: 1px solid #1f2937; }
+     .navbar {
+      background: var(--dark-gray);
+      border-bottom: 3px solid var(--primary-orange);
+      transition: var(--transition-ease);
+    }
+    .navbar-brand img {
+      filter: drop-shadow(0 0 8px var(--primary-orange));
+    }
+    .nav-link {
+      color: var(--text-light) !important;
+      font-weight: 500;
+      transition: var(--transition-ease);
+      padding: 0.5rem 1rem !important;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background-color: var(--primary-orange);
+      transition: var(--transition-ease);
+      transform: translateX(-50%);
+    }
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 80%;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary-orange) !important;
+    }
+    
+      .button-container {
+      text-align: center;
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .action-button, .action-button-active {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: var(--secondary-orange);
+      color: var(--dark-gray);
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    .action-button:hover, .action-button-active:hover {
+      background-color: var(--primary-orange);
+    }
+    .action-button-active {
+      background-color: var(--primary-orange);
+      color: var(--dark-gray);
+    }
+
+    .controls-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      align-items: center;
+      padding: 20px 0;
+    }
+    .controls-container label {
+      color: var(--text-light);
+    }
+    .controls-container select, .controls-container button {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+      background-color: var(--dark-gray);
+      color: var(--text-light);
+      border: 1px solid var(--primary-orange);
+      border-radius: 6px;
+    }
+    .controls-container select:focus, .controls-container button:focus {
+      outline: none;
+      box-shadow: 0 0 5px var(--primary-orange);
+    }
+    .controls-container button {
+      width: auto;
+      background-color: var(--primary-orange);
+      color: var(--dark-gray);
+      font-weight: bold;
+    }
+    .controls-container button:hover {
+      background-color: var(--secondary-orange);
+    }
+
+   footer {
+      background-color: var(--dark-gray);
+      color: var(--text-light);
+      padding: 40px 0;
+      margin-top: auto;
+      text-align: center;
+    }
+    footer img {
+      width: 160px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 8px var(--primary-orange));
+    }
+    footer p {
+      color: var(--text-light);
+      margin: 0;
+    }
+    .footer-links {
+      margin-top: 10px;
+    }
+    .footer-links a {
+      color: var(--primary-orange);
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s ease;
+    }
+    .footer-links a:hover {
+      color: var(--secondary-orange);
+    }
+    .status-inactive { color: #dc2626 !important; }
+    /* full-bleed helper: make an element span the full viewport width */
+    .full-bleed {
+      position: relative;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      width: 100vw;
+      max-width: 100vw;
+      box-shadow: none;
+      border-radius: 0;
+      padding-left: 1rem; padding-right: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="sticky-top-bar">
+    <div class="container py-3 d-flex flex-wrap align-items-center gap-3">
+      <div class="me-auto">
+        <div class="h4 mb-0">Monthly Attendance</div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+    <div class="row g-3">
+      <!-- Monthly Attendance Panel (kept) -->
+      <div class="col-12 mt-4">
+        <div class="card full-bleed">
+          <div class="card-header bg-transparent border-0 d-flex align-items-center gap-3">
+            <span class="small-muted">Monthly Attendance</span>
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <select id="monthSelect" class="form-select form-select-sm">
+              </select>
+              <select id="yearSelect" class="form-select form-select-sm">
+              </select>
+              <button id="loadMonthBtn" class="btn btn-outline-light btn-sm">Load Month</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="monthlyHint" class="small-muted mb-2">Select a month and click Load Month.</div>
+            <div class="table-responsive" id="monthlyContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Firebase SDK (Modular v10) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // --- Your Firebase config (provided) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+      authDomain: "virac-tsv.firebaseapp.com",
+      projectId: "virac-tsv",
+      storageBucket: "virac-tsv.appspot.com",
+      messagingSenderId: "455316064834",
+      appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Note: week/chart UI removed — page now focuses only on Monthly Attendance
+    // Helper: simple HTML escape used by the table builder
+    function escapeHtml(s){
+      return String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\'':'&#39;','\"':'&quot;'}[c]));
+    }
+
+    // --- Monthly attendance UI setup ---
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const loadMonthBtn = document.getElementById('loadMonthBtn');
+    const monthlyContainer = document.getElementById('monthlyContainer');
+    const monthlyHint = document.getElementById('monthlyHint');
+
+    // Populate month/year selectors
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now = new Date();
+    for (let i=0;i<12;i++){ const opt = document.createElement('option'); opt.value = i; opt.textContent = monthNames[i]; if (i===now.getMonth()) opt.selected = true; monthSelect.appendChild(opt); }
+    // include next year (e.g., 2026) plus the previous 2 years
+    for (let y = now.getFullYear() + 1; y >= now.getFullYear()-2; y--){ const opt = document.createElement('option'); opt.value = y; opt.textContent = y; if (y===now.getFullYear()) opt.selected = true; yearSelect.appendChild(opt);} 
+
+    loadMonthBtn.addEventListener('click', () => {
+      const m = Number(monthSelect.value);
+      const y = Number(yearSelect.value);
+      loadMonthlyAttendance(y, m);
+    });
+
+    // Derive whether a schedule instance is present for a specific schedule key
+    function schedulePresentForDoc(data, key){
+      if (!key) return !!(data.timeIn && data.timeOut);
+      if (key === '1') return !!(data.timeIn1 && data.timeOut1);
+      if (key === '2') return !!(data.timeIn2 && data.timeOut2);
+      return false;
+    }
+
+    // Load monthly attendance by scanning week collections (wk1..wk53) and building day map
+    async function loadMonthlyAttendance(year, monthIndex){
+      // prevent concurrent loads and indicate progress
+      loadMonthBtn.disabled = true;
+      monthlyHint.textContent = `Loading attendance for ${monthNames[monthIndex]} ${year}...`;
+      // ensure only one table is present
+      monthlyContainer.querySelectorAll('table').forEach(t => t.remove());
+      monthlyContainer.innerHTML = '';
+      // Map: name -> { days: {day: 'present'|'absent'}, totalScheduled, presents, absents }
+      const members = new Map();
+
+      // scan all week collections (1..53)
+      const updates = [];
+      for (let wk = 1; wk <= 53; wk++){
+        try{
+          const coll = collection(db, `wk${wk}`);
+          const snap = await getDocs(coll);
+          snap.forEach(docSnap => {
+            const data = docSnap.data() || {};
+            const name = docSnap.id;
+            // for each schedule field, check date and map to day
+            const checks = [ ['','assignedTime'], ['1','assignedTime1'], ['2','assignedTime2'] ];
+            checks.forEach(([k,field]) => {
+              const at = data[field];
+              if (!at) return;
+              const d = (typeof at === 'string') ? new Date(at) : (at.toDate ? at.toDate() : new Date(at));
+              if (d.getFullYear() !== year || d.getMonth() !== monthIndex) return;
+              const day = d.getDate();
+              if (!members.has(name)) members.set(name, { days: {}, totalScheduled:0, presents:0, absents:0, manualStatus:null });
+              const m = members.get(name);
+              m.totalScheduled++;
+              const present = schedulePresentForDoc(data, k);
+              m.days[day] = present ? 'present' : 'absent';
+              if (present) m.presents++; else m.absents++;
+            });
+          });
+        }catch(e){ console.warn('wk read error', wk, e); }
+      }
+
+      // Ensure we also include seminar participants (so names appear even with no attendance data)
+      try{
+        const pSnap = await getDocs(collection(db, 'seminar_participants'));
+        pSnap.forEach(ps => {
+          const pdata = ps.data() || {};
+          const pname = pdata.name || ps.id;
+          if (!members.has(pname)) members.set(pname, { days:{}, totalScheduled:0, presents:0, absents:0, manualStatus:null });
+        });
+      }catch(e){ console.warn('participants read error', e); }
+
+      // Merge any manual overrides stored in monthly collection
+      const monthKey = `${year}${String(monthIndex+1).padStart(2,'0')}`;
+      const monthlyCollName = `monthly_attendance_${monthKey}`;
+      try{
+        const mcoll = collection(db, monthlyCollName);
+        const msnap = await getDocs(mcoll);
+        msnap.forEach(d => {
+          const name = d.id;
+          const obj = d.data() || {};
+          if (!members.has(name)) members.set(name, { days:{}, totalScheduled:0, presents:0, absents:0, manualStatus:null });
+          const m = members.get(name);
+          if (obj.days) {
+            for (const [dayStr, val] of Object.entries(obj.days)){
+              const day = Number(dayStr);
+              const prev = m.days[day];
+              if (prev === 'present') m.presents--; else if (prev === 'absent') m.absents--;
+              m.days[day] = val;
+              if (val === 'present') m.presents++; else if (val === 'absent') m.absents++;
+              // if it wasn't in totalScheduled, consider it scheduled (manual entry)
+              if (!prev) m.totalScheduled++;
+            }
+          }
+          if (obj.status) m.manualStatus = obj.status;
+        });
+      }catch(e){ console.warn('monthly read error', e); }
+
+      // Build table
+      const daysInMonth = new Date(year, monthIndex+1, 0).getDate();
+      // determine which days actually have any data (present/absent)
+      const activeDays = [];
+      for (let d = 1; d <= daysInMonth; d++){
+        let any = false;
+        for (const nm of members.keys()){
+          const m = members.get(nm);
+          if (m.days && m.days[d]) { any = true; break; }
+        }
+        if (any) activeDays.push(d);
+      }
+      // header
+      const tbl = document.createElement('table'); tbl.className = 'table table-sm table-bordered table-dark';
+      const thead = document.createElement('thead');
+      // Add select-all checkbox column and Name column + only active day columns
+      let headerRow = '<tr><th style="width:30px"><input type="checkbox" id="selectAllRows" /></th><th>Name</th>';
+      for (const d of activeDays) headerRow += `<th style="width:40px">${d}</th>`;
+      headerRow += '<th style="width:90px">Present</th><th style="width:90px">Absent</th><th style="width:140px">Status</th></tr>';
+      thead.innerHTML = headerRow; tbl.appendChild(thead);
+      const tbody = document.createElement('tbody');
+
+      // sort by name
+      const names = Array.from(members.keys()).sort((a,b)=>a.localeCompare(b));
+      for (const name of names){
+        const m = members.get(name);
+        const tr = document.createElement('tr');
+        // prepare initial status (manual override or computed fallback)
+        const manualVal = (m.manualStatus === 'REGULAR') ? 'ACTIVE' : m.manualStatus;
+        const initialStatus = manualVal || (m.absents >= 3 ? 'INACTIVE' : 'ACTIVE');
+        // checkbox cell + name (name cell carries status class)
+        let nameClass = initialStatus === 'INACTIVE' ? 'status-inactive' : '';
+        let row = `<td style="text-align:center"><input type="checkbox" class="row-select" data-name="${escapeHtml(name)}" /></td><td class="name-cell ${nameClass}" data-name="${escapeHtml(name)}"><strong>${escapeHtml(name)}</strong></td>`;
+        for (const d of activeDays){
+          const val = m.days[d] || '';
+          const badge = val === 'present' ? `<span class="badge badge-present">P</span>` : val === 'absent' ? `<span class="badge badge-absent">A</span>` : '';
+          row += `<td class="day-cell" data-name="${escapeHtml(name)}" data-day="${d}" style="text-align:center;cursor:pointer">${badge}</td>`;
+        }
+        row += `<td class="text-center">${m.presents}</td><td class="text-center">${m.absents}</td>`;
+        // compute suggested status (no REGULAR; TRAINEE must be set manually)
+        const manual = (m.manualStatus === 'REGULAR') ? 'ACTIVE' : m.manualStatus;
+        let suggested = manual || (m.absents >= 3 ? 'INACTIVE' : 'ACTIVE');
+        row += `<td><select class="form-select form-select-sm status-select" data-name="${escapeHtml(name)}"><option value="ACTIVE">ACTIVE</option><option value="INACTIVE">INACTIVE</option><option value="TRAINEE">TRAINEE</option></select></td>`;
+        tr.innerHTML = row;
+        tbody.appendChild(tr);
+      }
+      tbl.appendChild(tbody);
+      monthlyContainer.appendChild(tbl);
+      // Insert edit toolbar above table (allows bulk manual edits)
+      const toolbar = document.createElement('div');
+      toolbar.className = 'd-flex gap-2 mb-2 align-items-center';
+      // Day select
+      const daySel = document.createElement('select'); daySel.className = 'form-select form-select-sm'; daySel.style.width = '110px';
+      for (let d=1; d<=daysInMonth; d++){ const o = document.createElement('option'); o.value = d; o.textContent = d; daySel.appendChild(o); }
+      // Action select
+      const actionSel = document.createElement('select'); actionSel.className = 'form-select form-select-sm'; actionSel.style.width = '150px';
+      actionSel.innerHTML = `<option value="present">Mark Present</option><option value="absent">Mark Absent</option><option value="clear">Clear</option>`;
+      // Save button
+      const saveBtn = document.createElement('button'); saveBtn.className = 'btn btn-primary btn-sm'; saveBtn.textContent = 'Save Changes';
+      // Append
+      toolbar.appendChild(document.createTextNode('Bulk edit:')); toolbar.appendChild(daySel); toolbar.appendChild(actionSel); toolbar.appendChild(saveBtn);
+      monthlyContainer.insertBefore(toolbar, tbl);
+
+      // Wire up select-all checkbox
+      const selectAll = monthlyContainer.querySelector('#selectAllRows');
+      if (selectAll){
+        selectAll.addEventListener('change', (e)=>{
+          const checked = e.target.checked;
+          monthlyContainer.querySelectorAll('.row-select').forEach(cb => { cb.checked = checked; });
+        });
+      }
+
+      // Bulk save handler
+      saveBtn.addEventListener('click', async ()=>{
+        const day = Number(daySel.value);
+        const action = actionSel.value; // 'present'|'absent'|'clear'
+        const selected = Array.from(monthlyContainer.querySelectorAll('.row-select')).filter(cb => cb.checked).map(cb => cb.dataset.name);
+        if (!selected.length){ alert('Please select at least one member.'); return; }
+        saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+        try{
+            await Promise.all(selected.map(async (name) => {
+              const monthlyDocRef = doc(db, `monthly_attendance_${monthKey}`, name);
+              const docSnap = await getDoc(monthlyDocRef);
+              let payload = {};
+              if (docSnap.exists()) payload = docSnap.data();
+              payload.days = payload.days || {};
+              if (action === 'clear') delete payload.days[day]; else payload.days[day] = action;
+              await setDoc(monthlyDocRef, payload, { merge: true });
+              // Also reflect change in the corresponding weekly collection (wk{N})
+              try{
+                await reflectToWeek(year, monthIndex, day, name, action);
+              }catch(e){ console.warn('week reflect failed for', name, e); }
+            }));
+          monthlyHint.textContent = `Saved ${selected.length} changes for day ${day}. Reloading...`;
+          loadMonthlyAttendance(year, monthIndex);
+        }catch(e){ console.error(e); alert('Failed to save changes: '+ e.message); }
+        finally{ saveBtn.disabled = false; saveBtn.textContent = 'Save Changes'; }
+      });
+
+        // Helper to compute ISO week number for a given local date
+        function getISOWeekNumber(d){
+          const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          // Thursday in current week decides the year.
+          date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+          const firstThursday = new Date(date.getFullYear(), 0, 4);
+          const weekNumber = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + (firstThursday.getDay() + 6) % 7) / 7);
+          return weekNumber;
+        }
+
+        // Reflect a single manual day change into the appropriate weekly collection doc
+        async function reflectToWeek(year, monthIdx, day, name, action){
+          const d = new Date(year, monthIdx, day);
+          const wk = getISOWeekNumber(d);
+          const collName = `wk${wk}`;
+          const docRef = doc(db, collName, name);
+          const wkSnap = await getDoc(docRef);
+          const data = wkSnap.exists() ? wkSnap.data() : {};
+          // Slots to use: main -> suffix '', then '1', then '2'
+          const slots = [ {s:'', at:'assignedTime', tin:'timeIn', tout:'timeOut'}, {s:'1', at:'assignedTime1', tin:'timeIn1', tout:'timeOut1'}, {s:'2', at:'assignedTime2', tin:'timeIn2', tout:'timeOut2'} ];
+          // find slot with same date
+          let chosen = slots.find(slot => {
+            const at = data[slot.at];
+            if (!at) return false;
+            const ad = (typeof at === 'string') ? new Date(at) : (at.toDate ? at.toDate() : new Date(at));
+            return ad.getFullYear() === d.getFullYear() && ad.getMonth() === d.getMonth() && ad.getDate() === d.getDate();
+          });
+          if (!chosen) chosen = slots.find(slot => !data[slot.at]);
+          if (!chosen) chosen = slots[slots.length-1]; // overwrite last if none available
+
+          const assignedStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T09:00:00`;
+          const updatePayload = {};
+          updatePayload[chosen.at] = assignedStr;
+          if (action === 'present'){
+            updatePayload[chosen.tin] = new Date().toISOString();
+            updatePayload[chosen.tout] = new Date(Date.now() + 60*60*1000).toISOString();
+          }else if (action === 'absent'){
+            updatePayload[chosen.tin] = null;
+            updatePayload[chosen.tout] = null;
+          }else if (action === 'clear'){
+            // if a slot matches this date, clear it
+            if (data[chosen.at]){
+              updatePayload[chosen.at] = null;
+              updatePayload[chosen.tin] = null;
+              updatePayload[chosen.tout] = null;
+            }
+          }
+          await setDoc(docRef, updatePayload, { merge: true });
+        }
+      // record which month is currently loaded
+      monthlyContainer.dataset.loaded = monthKey;
+      // re-enable load button
+      loadMonthBtn.disabled = false;
+      monthlyHint.textContent = `Loaded ${names.length} members for ${monthNames[monthIndex]} ${year}. Click cells to toggle P/A; change status from dropdown to override. (TRAINEE must be assigned manually.)`;
+
+      // Wire up cell toggles
+      monthlyContainer.querySelectorAll('.day-cell').forEach(td => td.addEventListener('click', async (e)=>{
+        const el = e.currentTarget;
+        const name = el.dataset.name;
+        const day = el.dataset.day;
+        // toggle value
+        const current = el.textContent.trim() === 'P' ? 'present' : el.textContent.trim() === 'A' ? 'absent' : '';
+        const next = current === 'present' ? 'absent' : current === 'absent' ? '' : 'present';
+        // update UI immediately
+        el.innerHTML = next === 'present' ? `<span class="badge badge-present">P</span>` : next === 'absent' ? `<span class="badge badge-absent">A</span>` : '';
+        // persist to monthly collection
+        const monthlyDocRef = doc(db, `monthly_attendance_${monthKey}`, name);
+        const docSnap = await getDoc(monthlyDocRef);
+        let payload = {};
+        if (docSnap.exists()) payload = docSnap.data();
+        payload.days = payload.days || {};
+        if (next === '') delete payload.days[day]; else payload.days[day] = next;
+        await setDoc(monthlyDocRef, payload, { merge: true });
+        // reload month to recompute counts and status
+        loadMonthlyAttendance(year, monthIndex);
+      }));
+
+      // Wire up status selects
+      monthlyContainer.querySelectorAll('.status-select').forEach(sel => {
+        const nm = sel.dataset.name;
+        const m = members.get(nm);
+        const manualVal2 = (m.manualStatus === 'REGULAR') ? 'ACTIVE' : m.manualStatus;
+        const initVal = manualVal2 || (m.absents >= 3 ? 'INACTIVE' : 'ACTIVE');
+        sel.value = initVal;
+        // ensure name cell class matches initial status
+        const nameCell = monthlyContainer.querySelector(`.name-cell[data-name="${CSS.escape(nm)}"]`);
+        if (nameCell){
+          if (initVal === 'INACTIVE') nameCell.classList.add('status-inactive'); else nameCell.classList.remove('status-inactive');
+        }
+        sel.addEventListener('change', async (e) => {
+          const val = e.target.value;
+          const monthlyDocRef = doc(db, `monthly_attendance_${monthKey}`, nm);
+          await setDoc(monthlyDocRef, { status: val }, { merge: true });
+          // update UI immediately without waiting for full reload
+          const nc = monthlyContainer.querySelector(`.name-cell[data-name="${CSS.escape(nm)}"]`);
+          if (nc){ if (val === 'INACTIVE') nc.classList.add('status-inactive'); else nc.classList.remove('status-inactive'); }
+          // reload to recompute counts
+          loadMonthlyAttendance(year, monthIndex);
+        });
+      });
+    }
+
+    
+  </script>
+
+
+  <!-- Chart.js removed (not needed for monthly-only view) -->
+</body>
+</html>
