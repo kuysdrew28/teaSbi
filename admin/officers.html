@@ -162,7 +162,6 @@
       color: var(--secondary-orange);
     }
     .status-inactive { color: #dc2626 !important; }
-    .status-trainee { color: #7F00FF !important; }
     .badge-active { background: #16a34a; color: #fff; }
     .badge-inactive { background: #dc2626; color: #fff; }
     /* full-bleed helper: make an element span the full viewport width */
@@ -210,7 +209,7 @@
             <div id="monthlySummary" class="d-flex gap-3 align-items-center mb-2">
               <div class="small-muted">Active: <span id="activeCount" class="badge badge-active">0</span></div>
               <div class="small-muted">Inactive: <span id="inactiveCount" class="badge badge-inactive">0</span></div>
-               <div class="small-muted">Trainee: <span id="traineeCount" class="badge badge-trainee">6</span></div>
+               <div class="small-muted">Trainee: <span id="traineeCount" class="badge badge-trainee">4</span></div>
             
             </div>
             <div class="table-responsive" id="monthlyContainer"></div>
@@ -296,7 +295,7 @@
             const data = docSnap.data() || {};
             const name = docSnap.id;
             // for each schedule field, check date and map to day
-            const checks = [ ['','assignedTime'], ['1','assignedTime1'], ['2','assignedTime2'] ];
+            const checks = [ ['','assignedTime1'], ['1','assignedTime1'], ['2','assignedTime2'] ];
             checks.forEach(([k,field]) => {
               const at = data[field];
               if (!at) return;
@@ -487,7 +486,7 @@
           const wkSnap = await getDoc(docRef);
           const data = wkSnap.exists() ? wkSnap.data() : {};
           // Slots to use: main -> suffix '', then '1', then '2'
-          const slots = [ {s:'', at:'assignedTime', tin:'timeIn', tout:'timeOut'}, {s:'1', at:'assignedTime1', tin:'timeIn1', tout:'timeOut1'}, {s:'2', at:'assignedTime2', tin:'timeIn2', tout:'timeOut2'} ];
+          const slots = [ {s:'', at:'assignedTime1', tin:'timeIn1', tout:'timeOut1'}, {s:'1', at:'assignedTime1', tin:'timeIn1', tout:'timeOut1'}, {s:'2', at:'assignedTime2', tin:'timeIn2', tout:'timeOut2'} ];
           // find slot with same date
           let chosen = slots.find(slot => {
             const at = data[slot.at];
@@ -580,5 +579,3 @@
   <!-- Chart.js removed (not needed for monthly-only view) -->
 </body>
 </html>
-
-
