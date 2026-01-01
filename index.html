@@ -2,6 +2,92 @@
 
 <!DOCTYPE html>
 <html lang="zxx">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Popup box */
+        .popup {
+            background: #ffffff;
+            padding: 20px;
+            width: 320px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .popup img {
+            width: 100%;
+            max-height: 90%;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .popup h2 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .popup p {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .close-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .close-btn:hover {
+            background: #0056b3;
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+    <script>
+    // Show popup on page load
+    window.onload = function () {
+        document.getElementById("popupOverlay").style.display = "flex";
+    };
+
+    function closePopup() {
+        document.getElementById("popupOverlay").style.display = "none";
+    }
+</script>
 
 <head>
     <meta charset="UTF-8">
@@ -32,6 +118,15 @@
 </head>
 
 <body>
+
+    <div class="overlay" id="popupOverlay">
+    <div class="popup">
+        <!-- Replace the image source below -->
+        <img src="img/Newyear.jpg" alt="Greeting Photo">
+
+        <button class="close-btn" onclick="closePopup()">Close</button>
+    </div>
+</div>
     <!-- Page Preloder -->
     <div id="preloder">
         <div class="loader"></div>
@@ -404,6 +499,7 @@
                     window.location.href = "login.html";
                 }
     });
+
 </script>
                                                     <div style="margin-top:10px;">
                                                         <button id="logout-footer-btn" class="btn btn-danger" style="display:none;">Log Out</button>
@@ -431,51 +527,6 @@
                                                                                                                     await signOut(logoutAuthIndex);
                                                                                                                     window.location.href = 'login.html';
                                                                                                                 });
-                                                                                                            
-                                                                                                            // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-document.addEventListener('keydown', function(e) {
-    if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) ||
-        (e.ctrlKey && e.key === "U")
-    ) {
-        e.preventDefault();
-        alert("Developer tools are disabled!");
-        return false;
-    }
-});
-
-// Disable right-click
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    alert("Right-click is disabled!");
-});
-
-// Disable text selection
-document.addEventListener('selectstart', function(e) {
-    e.preventDefault();
-});
-
-// Disable copy, cut, and paste
-document.addEventListener('copy', function(e) {
-    e.preventDefault();
-    alert("Copying is disabled!");
-});
-
-document.addEventListener('cut', function(e) {
-    e.preventDefault();
-    alert("Cutting is disabled!");
-});
-
-document.addEventListener('paste', function(e) {
-    e.preventDefault();
-    alert("Pasting is disabled!");
-});
-
-// Optional: Disable dragging of content (e.g., images)
-document.addEventListener('dragstart', function(e) {
-    e.preventDefault();
-});
                                                                                                         </script>
                                                                         </div>
             </div>
