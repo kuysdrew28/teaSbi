@@ -107,6 +107,12 @@
 
     <div class="sidebar">
         <h3 class="text-center mb-4"><i class="fas fa-store"></i> Sari-Sari OS</h3>
+        
+        <!-- Firebase Status -->
+        <div class="alert alert-sm mb-3 mx-3" id="firebase-status" style="padding: 8px; font-size: 0.85em; border-radius: 5px;">
+            <i class="fas fa-circle-notch fa-spin"></i> Connecting to Firebase...
+        </div>
+        
         <a href="#" onclick="showSection('dashboard')" class="nav-link active" id="nav-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <a href="#" onclick="showSection('pos')" class="nav-link" id="nav-pos"><i class="fas fa-cash-register"></i> POS (Cashier)</a>
         <a href="#" onclick="showSection('inventory')" class="nav-link" id="nav-inventory"><i class="fas fa-boxes"></i> Inventory</a>
@@ -475,8 +481,36 @@
         window.addEventListener('load', () => {
             loadDataFromFirebase().then(() => {
                 setupRealtimeListener();
+                updateFirebaseStatus();
             });
         });
+
+        // Update Firebase status indicator
+        function updateFirebaseStatus() {
+            const statusDiv = document.getElementById('firebase-status');
+            if (!statusDiv) return;
+
+            if (firestoreReady && isOnline) {
+                statusDiv.innerHTML = '<i class="fas fa-check-circle" style="color: #00a65a;"></i> <span style="color: #00a65a;">Firebase Connected</span>';
+                statusDiv.style.backgroundColor = '#e6f7ed';
+                statusDiv.style.borderColor = '#00a65a';
+            } else if (firestoreReady && !isOnline) {
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ff9800;"></i> <span style="color: #ff9800;">Offline Mode</span>';
+                statusDiv.style.backgroundColor = '#fff3e0';
+                statusDiv.style.borderColor = '#ff9800';
+            } else if (!firestoreReady && isOnline) {
+                statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: #2196F3;"></i> <span style="color: #2196F3;">Connecting...</span>';
+                statusDiv.style.backgroundColor = '#e3f2fd';
+                statusDiv.style.borderColor = '#2196F3';
+            } else {
+                statusDiv.innerHTML = '<i class="fas fa-times-circle" style="color: #d32f2f;"></i> <span style="color: #d32f2f;">No Connection</span>';
+                statusDiv.style.backgroundColor = '#ffebee';
+                statusDiv.style.borderColor = '#d32f2f';
+            }
+        }
+
+        // Check status periodically
+        setInterval(updateFirebaseStatus, 2000);
         
 
         // --- NAVIGATION ---
@@ -571,7 +605,16 @@
 
         function deleteItem(index) {
             if(confirm("Are you sure you want to delete this item?")) {
+                const itemCode = inventory[index].code;
                 inventory.splice(index, 1);
+                
+                // Delete from Firebase
+                if (isOnline && firestoreReady) {
+                    db.collection('inventory').doc(itemCode).delete().then(() => {
+                        console.log('✅ Item deleted from Firebase:', itemCode);
+                    }).catch(error => console.error('Error deleting item:', error));
+                }
+                
                 saveData();
                 renderInventory();
             }
@@ -580,7 +623,16 @@
         function addStock(index) {
             let add = prompt("Enter quantity to add:", "10");
             if(add) {
-                inventory[index].stock += parseInt(add);
+                const quantity = parseInt(add);
+                inventory[index].stock += quantity;
+                
+                // Update in Firebase
+                if (isOnline && firestoreReady) {
+                    db.collection('inventory').doc(inventory[index].code).update({
+                        stock: inventory[index].stock
+                    }).catch(error => console.error('Error updating stock:', error));
+                }
+                
                 saveData();
                 renderInventory();
             }
@@ -626,7 +678,7 @@
             // Request camera access
             navigator.mediaDevices.getUserMedia({
                 video: { 
-                    facingMode: 'environment',
+                    facingMode: 'user',
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 }
@@ -654,7 +706,7 @@
                     type: 'LiveStream',
                     target: document.querySelector('#scanner-container'),
                     constraints: {
-                        facingMode: 'environment'
+                        facingMode: 'user'
                     }
                 },
                 decoder: {
@@ -962,21 +1014,41 @@
                 const inventoryItem = inventory.find(i => i.code === cartItem.code);
                 if (inventoryItem) {
                     inventoryItem.stock -= cartItem.qty;
+                    
+                    // Update in Firebase
+                    if (isOnline && firestoreReady) {
+                        db.collection('inventory').doc(inventoryItem.code).update({
+                            stock: inventoryItem.stock
+                        }).catch(error => console.error('Error updating stock:', error));
+                    }
                 }
             });
 
             // 2. Record Sale
-            salesHistory.push({
+            const saleRecord = {
                 date: new Date().toLocaleString(),
+                timestamp: new Date(),
                 items: cart.map(c => `${c.qty}x ${c.name}`).join(', '),
-                total: total
-            });
+                itemDetails: cart.map(c => ({ code: c.code, name: c.name, qty: c.qty, price: c.price })),
+                total: total,
+                cashReceived: cash,
+                change: cash - total
+            };
+            
+            salesHistory.push(saleRecord);
 
-            // 3. Save & Clean up
+            // 3. Save to Firestore
+            if (isOnline && firestoreReady) {
+                db.collection('sales').add(saleRecord).then(() => {
+                    console.log('✅ Sale recorded in Firebase');
+                }).catch(error => console.error('Error recording sale:', error));
+            }
+
+            // 4. Save & Clean up
             saveData();
-            alert(`Transaction Complete!\nChange: ₱${(cash - total).toFixed(2)}`);
+            alert(`✅ Transaction Complete!\nChange: ₱${(cash - total).toFixed(2)}`);
             clearCart();
-            renderInventory(); // Refresh inventory view just in case
+            renderInventory();
         }
 
         // --- DASHBOARD & REPORTS ---
@@ -1013,6 +1085,16 @@
 
         function clearHistory() {
             if(confirm("Delete all sales history?")) {
+                // Delete from Firebase
+                if (isOnline && firestoreReady) {
+                    db.collection('sales').get().then(snapshot => {
+                        snapshot.forEach(doc => {
+                            doc.ref.delete();
+                        });
+                        console.log('✅ Sales history cleared from Firebase');
+                    }).catch(error => console.error('Error clearing history:', error));
+                }
+                
                 salesHistory = [];
                 saveData();
                 renderHistory();
