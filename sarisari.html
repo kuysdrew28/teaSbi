@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
-    <!-- Firebase SDK - Compat Version (works with regular HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -69,10 +68,18 @@
             overflow: hidden;
         }
         
-        #scanner-video {
+        #scanner-container video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        #scanner-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         .scanner-overlay {
@@ -81,20 +88,28 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 80%;
-            height: 300px;
+            height: 200px;
             border: 2px solid #1abc9c;
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(26, 188, 156, 0.5);
             pointer-events: none;
+            z-index: 10;
         }
         
-        .scanner-reticle {
+        .scan-line {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            height: 2px; 
+            background: #1abc9c; 
             animation: scan 2s linear infinite;
         }
         
         @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
+            0% { top: 0; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
         
         .scan-button { 
@@ -126,8 +141,7 @@
 
     <div class="sidebar">
         <h3 class="text-center mb-4"><i class="fas fa-store"></i> MEDz Store</h3>
-         <p>ver. 1.6</p>
-        <!-- Firebase Status -->
+         <p class="text-center text-muted small">ver. 1.8 (Fixed Cash Input)</p>
         <div class="alert alert-sm mb-3 mx-3" id="firebase-status" style="padding: 8px; font-size: 0.85em; border-radius: 5px;">
             <i class="fas fa-circle-notch fa-spin"></i> Connecting to Firebase...
         </div>
@@ -167,7 +181,6 @@
                 </div>
             </div>
 
-            <!-- Sales Chart -->
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="card p-3">
@@ -176,7 +189,6 @@
                     </div>
                 </div>
 
-                <!-- Low Stock Items -->
                 <div class="col-md-4">
                     <div class="card p-3">
                         <h5 class="card-title"><i class="fas fa-exclamation-circle text-warning"></i> Low Stock Alert</h5>
@@ -236,7 +248,7 @@
                         
                         <div class="mb-3">
                             <label>Cash Received</label>
-                            <input type="number" id="cash-received" class="form-control form-control-lg text-end" placeholder="0.00" oninput="calculateChange()">
+                            <input type="number" id="cash-received" class="form-control form-control-lg text-end" placeholder="0.00" oninput="calculateChange()" onkeydown="handleCashEnter(event)">
                         </div>
                         
                         <div class="d-flex justify-content-between mb-4">
@@ -305,7 +317,10 @@
                     <form id="add-item-form">
                         <div class="mb-2">
                             <label>Barcode / SKU</label>
-                            <input type="text" id="new-barcode" class="form-control" required placeholder="Scan or type code">
+                            <div class="input-group">
+                                <input type="text" id="new-barcode" class="form-control" required placeholder="Scan or type code">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openScannerFor('new-barcode')" title="Scan barcode"><i class="fas fa-camera"></i></button>
+                            </div>
                         </div>
                         <div class="mb-2">
                             <label>Product Name</label>
@@ -341,7 +356,6 @@
         </div>
     </div>
 
-    <!-- Barcode Scanner Modal -->
     <div class="modal fade" id="scannerModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -351,13 +365,13 @@
                 </div>
                 <div class="modal-body">
                     <div id="scanner-container">
-                        <video id="scanner-video"></video>
                         <div class="scanner-overlay">
-                            <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(to bottom, transparent, #1abc9c); animation: scan 2s linear infinite;"></div>
+                            <div class="scan-line"></div>
                         </div>
                     </div>
                     <div class="mt-3 text-center">
-                        <p id="scanner-status" class="text-muted"><i class="fas fa-spinner fa-spin"></i> Access camera and point at barcode...</p>
+                        <p id="scanner-status" class="text-muted"><i class="fas fa-spinner fa-spin"></i> Accessing Back Camera...</p>
+                        <p class="text-muted small">Hold camera steady. Barcode must be inside the box.</p>
                     </div>
                     <div class="mt-3" id="scanner-result" style="display: none;">
                         <div class="alert alert-success">
@@ -395,7 +409,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        // Configure cache settings (replaces deprecated enablePersistence)
         db.settings({
             cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
             merge: true
@@ -408,7 +421,6 @@
         let isOnline = navigator.onLine;
         let firestoreReady = false;
 
-        // Listen for online/offline status
         window.addEventListener('online', () => {
             isOnline = true;
             console.log('🟢 Back online - syncing data...');
@@ -419,17 +431,14 @@
             console.log('🔴 Offline mode - using local storage');
         });
 
-        // Initialize data from Firebase
         async function loadDataFromFirebase() {
             try {
-                // Load inventory
                 const inventorySnapshot = await db.collection('inventory').get();
                 inventory = [];
                 inventorySnapshot.forEach(doc => {
                     inventory.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Load sales history
                 const salesSnapshot = await db.collection('sales').orderBy('timestamp', 'desc').get();
                 salesHistory = [];
                 salesSnapshot.forEach(doc => {
@@ -442,7 +451,6 @@
                 renderInventory();
             } catch (error) {
                 console.error('Error loading from Firebase:', error);
-                // Fallback to localStorage
                 loadDataFromLocalStorage();
             }
         }
@@ -461,11 +469,9 @@
         }
 
         async function saveData() {
-            // Always save to localStorage first (offline support)
             localStorage.setItem('sariSariInventory', JSON.stringify(inventory));
             localStorage.setItem('sariSariSales', JSON.stringify(salesHistory));
 
-            // Sync to Firebase if online
             if (isOnline && firestoreReady) {
                 await syncDataWithFirebase();
             }
@@ -474,17 +480,13 @@
 
         async function syncDataWithFirebase() {
             try {
-                // Sync inventory
                 for (const item of inventory) {
                     const { id, ...data } = item;
                     const docRef = db.collection('inventory').doc(item.code);
                     await docRef.set(data, { merge: true });
                 }
-
-                // Sync sales
                 for (const sale of salesHistory) {
                     if (!sale.id || sale.id.startsWith('local-')) {
-                        // New sale from this session
                         await db.collection('sales').add({
                             ...sale,
                             timestamp: new Date(),
@@ -493,14 +495,12 @@
                         sale.id = 'synced-' + Date.now();
                     }
                 }
-
                 console.log('🔄 Data synced with Firebase');
             } catch (error) {
                 console.error('Error syncing to Firebase:', error);
             }
         }
 
-        // Real-time listener for inventory changes from other users
         function setupRealtimeListener() {
             try {
                 db.collection('inventory').onSnapshot(snapshot => {
@@ -527,7 +527,6 @@
             }
         }
 
-        // Load data on page load
         window.addEventListener('load', () => {
             loadDataFromFirebase().then(() => {
                 setupRealtimeListener();
@@ -535,7 +534,6 @@
             });
         });
 
-        // Update Firebase status indicator
         function updateFirebaseStatus() {
             const statusDiv = document.getElementById('firebase-status');
             if (!statusDiv) return;
@@ -558,12 +556,8 @@
                 statusDiv.style.borderColor = '#d32f2f';
             }
         }
-
-        // Check status periodically
         setInterval(updateFirebaseStatus, 2000);
         
-
-        // --- NAVIGATION ---
         function showSection(sectionId) {
             document.querySelectorAll('.main-content > div').forEach(div => div.style.display = 'none');
             document.getElementById(sectionId + '-section').style.display = 'block';
@@ -572,7 +566,6 @@
             document.getElementById('nav-' + sectionId).classList.add('active');
 
             if(sectionId === 'pos') {
-                // Ensure barcode input is focused and ready
                 const barcodeInput = document.getElementById('barcode-input');
                 setTimeout(() => {
                     barcodeInput.focus();
@@ -585,7 +578,6 @@
             if(sectionId === 'dashboard') {
                 setTimeout(() => {
                     updateDashboard();
-                    // Ensure chart resizes properly
                     if (salesChartInstance) {
                         salesChartInstance.resize();
                     }
@@ -630,8 +622,6 @@
                 alert("Please fill all fields");
                 return;
             }
-
-            // Check duplicate
             if (inventory.find(i => i.code === code)) {
                 alert("Barcode already exists!");
                 return;
@@ -640,7 +630,6 @@
             const newItem = { code, name, category, price, stock };
             inventory.push(newItem);
             
-            // Save to Firebase
             if (isOnline && firestoreReady) {
                 db.collection('inventory').doc(code).set(newItem).then(() => {
                     console.log('✅ Item added to Firebase:', code);
@@ -650,12 +639,8 @@
             }
             
             saveData();
-            
-            // Close modal using bootstrap API
             const modal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
             modal.hide();
-            
-            // Clear form
             document.getElementById('add-item-form').reset();
             renderInventory();
             alert("✅ Item Added!");
@@ -666,7 +651,6 @@
                 const itemCode = inventory[index].code;
                 inventory.splice(index, 1);
                 
-                // Delete from Firebase
                 if (isOnline && firestoreReady) {
                     db.collection('inventory').doc(itemCode).delete().then(() => {
                         console.log('✅ Item deleted from Firebase:', itemCode);
@@ -683,14 +667,11 @@
             if(add) {
                 const quantity = parseInt(add);
                 inventory[index].stock += quantity;
-                
-                // Update in Firebase
                 if (isOnline && firestoreReady) {
                     db.collection('inventory').doc(inventory[index].code).update({
                         stock: inventory[index].stock
                     }).catch(error => console.error('Error updating stock:', error));
                 }
-                
                 saveData();
                 renderInventory();
             }
@@ -698,157 +679,177 @@
 
         // --- POS FUNCTIONS ---
         let barcodeBuffer = '';
-        let scanTimeout;
-        let cameraStream = null;
         let isScanning = false;
         
-        // Audio feedback function (helpful for store environments)
         function playBeep(frequency = 800, duration = 200) {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                
                 oscillator.frequency.value = frequency;
                 oscillator.type = 'sine';
-                
                 gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-                
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + duration / 1000);
-            } catch (e) {
-                // Audio not supported, continue anyway
-            }
+            } catch (e) {}
         }
         
-        // Camera Scanner Functions
+        let quaggaProcessing = false;
+        let scannerTarget = null;
+        let lastScannedCode = null;
+        let scanConfidence = 0;
+        const CONFIDENCE_THRESHOLD = 3; 
+
         function initializeScanner() {
             if (isScanning) return;
             isScanning = true;
-            
-            const video = document.getElementById('scanner-video');
+            quaggaProcessing = false;
+            lastScannedCode = null;
+            scanConfidence = 0;
+
             const statusDiv = document.getElementById('scanner-status');
-            
-            // Request camera access
-            navigator.mediaDevices.getUserMedia({
-                video: { 
-                    facingMode: 'user',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            })
-            .then(stream => {
-                cameraStream = stream;
-                video.srcObject = stream;
-                video.setAttribute('playsinline', true); // Important for iOS
-                video.play().then(() => {
-                    statusDiv.innerHTML = '<i class="fas fa-crosshairs"></i> Point camera at barcode...';
-                    decodeBarcodeFromCamera();
-                });
-            })
-            .catch(error => {
-                console.error('Camera access denied:', error);
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Camera access denied. Please enable camera permissions in your settings.';
-                isScanning = false;
-            });
-        }
-        
-        function decodeBarcodeFromCamera() {
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Back Camera...';
+
             Quagga.init({
                 inputStream: {
                     name: 'Live',
                     type: 'LiveStream',
                     target: document.querySelector('#scanner-container'),
                     constraints: {
-                        facingMode: 'user'
+                        facingMode: "environment", 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        aspectRatio: { min: 1, max: 2 }
                     }
                 },
+                locator: { patchSize: 'medium', halfSample: true },
+                numOfWorkers: navigator.hardwareConcurrency || 2,
+                frequency: 10,
                 decoder: {
-                    readers: [
-                        'code_128_reader',
-                        'ean_reader',
-                        'ean_8_reader',
-                        'code_39_reader',
-                        'code_39_vin_reader',
-                        'codabar_reader',
-                        'upc_reader',
-                        'upc_e_reader',
-                        'i2of5_reader'
-                    ],
-                    debug: {
-                        showCanvas: true,
-                        showPatterns: false,
-                        showLines: false,
-                        showTiming: false,
-                        showErrors: false
-                    }
-                }
-            }, err => {
+                    readers: ['ean_reader', 'upc_reader', 'code_128_reader']
+                },
+                locate: true
+            }, function(err) {
                 if (err) {
-                    console.error('Quagga init error:', err);
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Camera Error: ' + err.name;
+                    isScanning = false;
                     return;
                 }
                 Quagga.start();
+                statusDiv.innerHTML = '<i class="fas fa-crosshairs"></i> Point camera at barcode...';
                 
-                Quagga.onDetected(function(result) {
-                    if (result.codeResult && result.codeResult.code) {
-                        const scannedCode = result.codeResult.code;
-                        handleScannedCode(scannedCode);
+                Quagga.onProcessed(function(result) {
+                    var drawingCtx = Quagga.canvas.ctx.overlay,
+                        drawingCanvas = Quagga.canvas.dom.overlay;
+                    if (result) {
+                        if (result.boxes) {
+                            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                            result.boxes.filter(function (box) {
+                                return box !== result.box;
+                            }).forEach(function (box) {
+                                Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                            });
+                        }
+                        if (result.box) {
+                            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+                        }
+                        if (result.codeResult && result.codeResult.code) {
+                            Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+                        }
                     }
                 });
+                Quagga.offDetected();
+                Quagga.onDetected(processQuaggaResult);
             });
+        }
+
+        function processQuaggaResult(result) {
+            if (quaggaProcessing) return;
+            if (!result || !result.codeResult || !result.codeResult.code) return;
+            const code = String(result.codeResult.code).trim();
+            if(code.length < 5) return;
+
+            if(code === lastScannedCode) {
+                scanConfidence++;
+            } else {
+                lastScannedCode = code;
+                scanConfidence = 0;
+            }
+
+            if(scanConfidence > CONFIDENCE_THRESHOLD) {
+                quaggaProcessing = true;
+                scanConfidence = 0;
+                lastScannedCode = null;
+                if (navigator.vibrate) navigator.vibrate(80);
+                handleScannedCode(code);
+                setTimeout(() => { quaggaProcessing = false; }, 1500);
+            }
         }
         
         function handleScannedCode(code) {
             Quagga.stop();
             isScanning = false;
             
-            // Show result
             document.getElementById('scanned-code').innerText = code;
             document.getElementById('scanner-result').style.display = 'block';
             document.getElementById('scanner-status').style.display = 'none';
             
-            // Set code to input and close scanner
             setTimeout(() => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('scannerModal'));
                 modal.hide();
-                
+
+                if (window.scannerTarget) {
+                    const targetEl = document.getElementById(window.scannerTarget);
+                    if (targetEl) targetEl.value = code;
+                    if (window.scannerTarget === 'new-barcode') {
+                        document.getElementById('new-name').focus();
+                        playBeep(800, 150);
+                        window.scannerTarget = null;
+                        document.getElementById('scanner-result').style.display = 'none';
+                        document.getElementById('scanner-status').style.display = 'block';
+                        return;
+                    }
+                }
+
                 document.getElementById('barcode-input').value = code;
                 addToCart(code);
                 document.getElementById('barcode-input').value = '';
                 document.getElementById('barcode-input').focus();
-                
-                // Reset scanner result
                 document.getElementById('scanner-result').style.display = 'none';
                 document.getElementById('scanner-status').style.display = 'block';
                 playBeep(800, 150);
                 playBeep(1000, 150);
-            }, 1500);
+            }, 500);
         }
         
         function stopScanner() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
+            try { Quagga.stop(); } catch (e) {}
+            const container = document.querySelector('#scanner-container');
+            if (container) {
+                Array.from(container.querySelectorAll('video, canvas')).forEach(n => n.remove());
+                if(!container.querySelector('.scanner-overlay')) {
+                     container.innerHTML = '<div class="scanner-overlay"><div class="scan-line"></div></div>';
+                }
             }
-            try {
-                Quagga.stop();
-            } catch (e) {}
             isScanning = false;
-            
-            // Reset UI
+            window.scannerTarget = null;
             document.getElementById('scanner-result').style.display = 'none';
             document.getElementById('scanner-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Access camera and point at barcode...';
+        }
+
+        function openScannerFor(targetInputId) {
+            window.scannerTarget = targetInputId || null;
+            const scannerModalEl = document.getElementById('scannerModal');
+            const scannerModal = bootstrap.Modal.getOrCreateInstance(scannerModalEl);
+            scannerModal.show();
         }
         
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
@@ -862,21 +863,8 @@
                     Quagga.decodeSingle({
                         src: canvas.toDataURL(),
                         numOfWorkers: 0,
-                        inputStream: {
-                            size: 800
-                        },
-                        decoder: {
-                            readers: [
-                                'code_128_reader',
-                                'ean_reader',
-                                'ean_8_reader',
-                                'code_39_reader',
-                                'codabar_reader',
-                                'upc_reader',
-                                'upc_e_reader',
-                                'i2of5_reader'
-                            ]
-                        }
+                        inputStream: { size: 800 },
+                        decoder: { readers: ['code_128_reader', 'ean_reader', 'code_39_reader', 'upc_reader'] }
                     }, function(result) {
                         if (result && result.codeResult) {
                             handleScannedCode(result.codeResult.code);
@@ -888,19 +876,17 @@
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-            
-            // Reset file input
             event.target.value = '';
         }
         
-        // Handle scanner modal open
         document.addEventListener('DOMContentLoaded', function() {
             const scannerModal = document.getElementById('scannerModal');
             if (scannerModal) {
                 scannerModal.addEventListener('shown.bs.modal', function() {
-                    setTimeout(() => {
-                        initializeScanner();
-                    }, 300);
+                    setTimeout(() => { initializeScanner(); }, 300);
+                });
+                scannerModal.addEventListener('hidden.bs.modal', function() {
+                    stopScanner();
                 });
             }
         });
@@ -911,13 +897,16 @@
                 const code = e.target.value.trim();
                 if (code) {
                     addToCart(code);
-                    e.target.value = ''; // Clear input for next scan
+                    e.target.value = ''; 
                     barcodeBuffer = '';
                 }
-                // Ensure input stays focused
-                setTimeout(() => {
-                    e.target.focus();
-                }, 10);
+                setTimeout(() => { e.target.focus(); }, 10);
+            }
+        }
+        
+        function handleCashEnter(e) {
+            if (e.key === 'Enter' || e.code === 'Enter') {
+                processCheckout();
             }
         }
 
@@ -934,45 +923,36 @@
         }
 
         function addToCart(code) {
-            if (!code || code === '') {
-                return;
-            }
-
+            if (!code || code === '') return;
             const item = inventory.find(i => i.code === code);
             
             if (!item) {
                 alert("⚠️ Item not found! Barcode: " + code);
-                playBeep(400, 300); // Error beep
+                playBeep(400, 300); 
                 document.getElementById('barcode-input').focus();
                 return;
             }
-
             if (item.stock <= 0) {
                 alert("❌ Out of Stock: " + item.name);
-                playBeep(400, 300); // Error beep
+                playBeep(400, 300); 
                 document.getElementById('barcode-input').focus();
                 return;
             }
-
-            // Check if already in cart
             const cartItem = cart.find(c => c.code === code);
             if (cartItem) {
                 if (cartItem.qty < item.stock) {
                     cartItem.qty++;
                 } else {
                     alert("❌ Not enough stock available!");
-                    playBeep(400, 300); // Error beep
+                    playBeep(400, 300); 
                 }
             } else {
                 cart.push({ ...item, qty: 1 });
             }
             renderCart();
-            
-            // Success beep
             playBeep(800, 150);
             playBeep(1000, 150);
             
-            // Provide visual feedback
             const input = document.getElementById('barcode-input');
             input.style.borderColor = '#28a745';
             setTimeout(() => {
@@ -985,11 +965,9 @@
             const tbody = document.getElementById('cart-body');
             tbody.innerHTML = '';
             let total = 0;
-
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
                 total += itemTotal;
-                
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.name}</td>
@@ -1004,18 +982,15 @@
                     </tr>
                 `;
             });
-
             document.getElementById('cart-total').innerText = total.toFixed(2);
             calculateChange();
-            
-            // Keep barcode input focused
-            document.getElementById('barcode-input').focus();
+            // IMPORTANT: Removed strict focus forcing here to allow cash input
+            // document.getElementById('barcode-input').focus(); 
         }
 
         function updateCartQty(index, change) {
             const item = cart[index];
             const stockItem = inventory.find(i => i.code === item.code);
-
             if (change === 1 && item.qty >= stockItem.stock) {
                 alert("Max stock reached");
                 return;
@@ -1024,7 +999,6 @@
                 removeFromCart(index);
                 return;
             }
-
             item.qty += change;
             renderCart();
         }
@@ -1045,10 +1019,8 @@
             const total = parseFloat(document.getElementById('cart-total').innerText);
             const cash = parseFloat(document.getElementById('cash-received').value) || 0;
             const change = cash - total;
-            
             const display = document.getElementById('change-display');
             display.innerText = change.toFixed(2);
-            
             if (change < 0) display.style.color = 'red';
             else display.style.color = 'green';
         }
@@ -1058,22 +1030,16 @@
                 alert("Cart is empty");
                 return;
             }
-            
             const total = parseFloat(document.getElementById('cart-total').innerText);
             const cash = parseFloat(document.getElementById('cash-received').value) || 0;
-            
             if (cash < total) {
                 alert("Insufficient Cash!");
                 return;
             }
-
-            // 1. Deduct Stock
             cart.forEach(cartItem => {
                 const inventoryItem = inventory.find(i => i.code === cartItem.code);
                 if (inventoryItem) {
                     inventoryItem.stock -= cartItem.qty;
-                    
-                    // Update in Firebase
                     if (isOnline && firestoreReady) {
                         db.collection('inventory').doc(inventoryItem.code).update({
                             stock: inventoryItem.stock
@@ -1081,8 +1047,6 @@
                     }
                 }
             });
-
-            // 2. Record Sale
             const saleRecord = {
                 date: new Date().toLocaleString(),
                 timestamp: new Date(),
@@ -1092,57 +1056,41 @@
                 cashReceived: cash,
                 change: cash - total
             };
-            
             salesHistory.push(saleRecord);
-
-            // 3. Save to Firestore
             if (isOnline && firestoreReady) {
                 db.collection('sales').add(saleRecord).then(() => {
                     console.log('✅ Sale recorded in Firebase');
                 }).catch(error => console.error('Error recording sale:', error));
             }
-
-            // 4. Save & Clean up
             saveData();
             alert(`✅ Transaction Complete!\nChange: ₱${(cash - total).toFixed(2)}`);
             clearCart();
             renderInventory();
-            updateDashboard(); // Refresh dashboard with new sales data
+            updateDashboard();
+            // Only refocus scanner after checkout is fully complete
+            setTimeout(() => { document.getElementById('barcode-input').focus(); }, 100);
         }
 
-        // --- DASHBOARD & REPORTS ---
         function updateDashboard() {
             document.getElementById('dash-total-items').innerText = inventory.length;
-            
-            // Calc Sales Today
             const today = new Date().toLocaleDateString();
             const todaySales = salesHistory
                 .filter(s => s.date.includes(today))
                 .reduce((acc, curr) => acc + curr.total, 0);
-                
             document.getElementById('dash-total-sales').innerText = todaySales.toFixed(2);
-
-            // Calc Low Stock
             const lowStock = inventory.filter(i => i.stock < 10).length;
             document.getElementById('dash-low-stock').innerText = lowStock;
-
-            // Update Low Stock Table
             updateLowStockTable();
-
-            // Update Sales Chart
             updateSalesChart();
         }
 
-        // Update Low Stock Items Table
         function updateLowStockTable() {
             const lowStockItems = inventory.filter(i => i.stock < 10).sort((a, b) => a.stock - b.stock);
             const tbody = document.getElementById('low-stock-body');
-            
             if (lowStockItems.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No low stock items</td></tr>';
                 return;
             }
-            
             tbody.innerHTML = '';
             lowStockItems.forEach(item => {
                 const stockClass = item.stock === 0 ? 'text-danger font-weight-bold' : 'text-warning';
@@ -1155,37 +1103,23 @@
             });
         }
 
-        // Sales Chart Global Variable
         let salesChartInstance = null;
-
-        // Update Sales Chart (Last 7 days)
         function updateSalesChart() {
             const ctx = document.getElementById('salesChart');
             if (!ctx) return;
-
-            // Get last 7 days of data
             const labels = [];
             const salesData = [];
-            
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toLocaleDateString();
-                labels.push(dateStr.substring(0, 5)); // MM/DD format
-                
+                labels.push(dateStr.substring(0, 5)); 
                 const daySales = salesHistory
                     .filter(s => s.date.includes(dateStr))
                     .reduce((acc, curr) => acc + curr.total, 0);
-                    
                 salesData.push(daySales);
             }
-
-            // Destroy existing chart if it exists
-            if (salesChartInstance) {
-                salesChartInstance.destroy();
-            }
-
-            // Create new chart
+            if (salesChartInstance) { salesChartInstance.destroy(); }
             salesChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1207,24 +1141,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: {
-                                font: { size: 12 }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '₱' + value.toFixed(0);
-                                }
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: true, labels: { font: { size: 12 } } } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return '₱' + value.toFixed(0); } } } }
                 }
             });
         }
@@ -1232,7 +1150,6 @@
         function renderHistory() {
             const tbody = document.getElementById('sales-history-body');
             tbody.innerHTML = '';
-            // Show latest first
             [...salesHistory].reverse().forEach(sale => {
                 tbody.innerHTML += `
                     <tr>
@@ -1246,16 +1163,12 @@
 
         function clearHistory() {
             if(confirm("Delete all sales history?")) {
-                // Delete from Firebase
                 if (isOnline && firestoreReady) {
                     db.collection('sales').get().then(snapshot => {
-                        snapshot.forEach(doc => {
-                            doc.ref.delete();
-                        });
+                        snapshot.forEach(doc => { doc.ref.delete(); });
                         console.log('✅ Sales history cleared from Firebase');
                     }).catch(error => console.error('Error clearing history:', error));
                 }
-                
                 salesHistory = [];
                 saveData();
                 renderHistory();
@@ -1272,21 +1185,18 @@
             downloadAnchorNode.remove();
         }
         
-        // Setup barcode input listeners on page load
+        // --- SMART FOCUS MANAGEMENT (THE FIX) ---
         window.addEventListener('load', function() {
             const barcodeInput = document.getElementById('barcode-input');
             
-            // Set initial focus when page loads
-            setTimeout(() => {
-                barcodeInput.focus();
-            }, 500);
+            // Set initial focus
+            setTimeout(() => { barcodeInput.focus(); }, 500);
             
-            // Handle paste events for barcode scanners (some scanners paste data)
+            // Handle paste events for scanners
             barcodeInput.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedText = (e.clipboardData || window.clipboardData).getData('text');
                 const code = pastedText.trim();
-                
                 if (code) {
                     addToCart(code);
                     barcodeInput.value = '';
@@ -1295,15 +1205,28 @@
                 }
             });
             
-            // Keep focus on input when typing
-            barcodeInput.addEventListener('blur', function() {
-                // Re-focus after a short delay if still on POS section
+            // Only refocus if user clicked something that ISN'T an input
+            barcodeInput.addEventListener('blur', function(e) {
                 const posSectionVisible = document.getElementById('pos-section').style.display !== 'none';
-                if (posSectionVisible) {
-                    setTimeout(() => {
-                        barcodeInput.focus();
-                    }, 100);
+                if (!posSectionVisible) return;
+
+                // 1. If user clicked the CASH input, DO NOT refocus scanner
+                if (e.relatedTarget && e.relatedTarget.id === 'cash-received') {
+                    return;
                 }
+                
+                // 2. If user clicked any other input or button, DO NOT refocus
+                if (e.relatedTarget && (e.relatedTarget.tagName === 'INPUT' || e.relatedTarget.tagName === 'BUTTON' || e.relatedTarget.tagName === 'SELECT')) {
+                    return;
+                }
+
+                // 3. Only refocus if clicked empty space
+                setTimeout(() => {
+                    const active = document.activeElement;
+                    if (!active || active === document.body) {
+                        barcodeInput.focus();
+                    }
+                }, 100);
             });
         });
         
