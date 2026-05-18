@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&M Joint Savings Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Login Styling */
+        .login-box {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .login-box p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--text-main);
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Dashboard Styling */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .btn-logout {
+            width: auto;
+            background-color: #ef4444;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .balance-card h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .history-section {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .depositor-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .tag-mark { background: #e0f2fe; color: #0369a1; }
+        .tag-mede { background: #fce7f3; color: #be185d; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- LOGIN PORTAL -->
+        <div id="login-container" class="card login-box">
+            <h2>Savings Portal</h2>
+            <p>Mag-log in upang i-monitor ang inyong savings.</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="Ipasok ang email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Ipasok ang password">
+                </div>
+                <button type="submit" id="btn-login">Mag-log In</button>
+                <div id="login-error" class="error-msg hidden"></div>
+            </form>
+        </div>
+
+        <!-- MAIN DASHBOARD -->
+        <div id="dashboard-container" class="card hidden">
+            <div class="dashboard-header">
+                <div>
+                    <h2>Mark & Medeliza Joint Savings</h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Real-time Co-Savings Monitor</p>
+                </div>
+                <button id="btn-logout" class="btn-logout">Log Out</button>
+            </div>
+
+            <div class="balance-card">
+                <h3>Kabuuang Naipon (Total Savings)</h3>
+                <div id="total-balance" class="balance-amount">₱0.00</div>
+            </div>
+
+            <div class="grid">
+                <!-- FORM NG HULOG -->
+                <div>
+                    <h3 style="margin-bottom: 15px; font-size: 18px;">Maglista ng Hulog</h3>
+                    <form id="deposit-form" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div class="form-group">
+                            <label for="depositor-name">Sino ang Naghulog?</label>
+                            <select id="depositor-name" required>
+                                <option value="" disabled selected>Pumili...</option>
+                                <option value="Mark Andrew Erisare">Mark Andrew Erisare</option>
+                                <option value="Medeliza Olino">Medeliza Olino</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="deposit-amount">Halaga (PHP)</label>
+                            <input type="number" id="deposit-amount" min="1" step="any" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="deposit-date">Petsa ng Paghulog</label>
+                            <input type="date" id="deposit-date" required>
+                        </div>
+                        <button type="submit">I-save ang Hulog</button>
+                    </form>
+                </div>
+
+                <!-- KASAYSAYAN NG MGA HULOG -->
+                <div class="history-section">
+                    <h3 style="font-size: 18px;">Kasaysayan ng Transaksyon</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Naghulog</th>
+                                <th>Halaga</th>
+                                <th>Petsa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-body">
+                            <!-- Dynamic items will load here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FIREBASE MODULES SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Ang iyong Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBMRruXH9Va15eBgogfwQF2zMD8gxZPps",
+            authDomain: "admin-1cbb9.firebaseapp.com",
+            projectId: "admin-1cbb9",
+            storageBucket: "admin-1cbb9.firebasestorage.app",
+            messagingSenderId: "300755873138",
+            appId: "1:300755873138:web:c54b3acf90f03b361241eb",
+            measurementId: "G-RLJBTJ21G0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const loginForm = document.getElementById('login-form');
+        const depositForm = document.getElementById('deposit-form');
+        const loginError = document.getElementById('login-error');
+        const totalBalanceDisplay = document.getElementById('total-balance');
+        const tableBody = document.getElementById('transaction-table-body');
+        const btnLogout = document.getElementById('btn-logout');
+
+        // Set default date picker to today's date
+        document.getElementById('deposit-date').value = new Date().toISOString().split('T')[0];
+
+        // 1. AUTHENTICATION LISTENER
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginContainer.classList.add('hidden');
+                dashboardContainer.classList.remove('hidden');
+                loadSavingsData();
+            } else {
+                loginContainer.classList.remove('hidden');
+                dashboardContainer.classList.add('hidden');
+                tableBody.innerHTML = '';
+            }
+        });
+
+        // 2. LOGIN PROCESS
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            loginError.classList.add('hidden');
+
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    loginError.classList.remove('hidden');
+                    loginError.textContent = "Maling email o password. Paki-subukan muli.";
+                });
+        });
+
+        // 3. LOGOUT PROCESS
+        btnLogout.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 4. ADD TRANSACTION (SUBMIT HULOG)
+        depositForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const depositor = document.getElementById('depositor-name').value;
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const date = document.getElementById('deposit-date').value;
+
+            try {
+                await addDoc(collection(db, "savings"), {
+                    depositor: depositor,
+                    amount: amount,
+                    date: date,
+                    createdAt: new Date()
+                });
+                
+                    // Reset Form values gracefully
+                    document.getElementById('deposit-amount').value = '';
+                    document.getElementById('depositor-name').value = '';
+            } catch (error) {
+                alert("May error sa pag-save: " + error.message);
+            }
+        });
+
+        // 5. REAL-TIME DATA FETCHING (FIRESTORE SNAPSHOT)
+        function loadSavingsData() {
+            const q = query(collection(db, "savings"), orderBy("date", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                let totalSavings = 0;
+                tableBody.innerHTML = '';
+
+                if(snapshot.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Wala pang nakatalang hulog.</td></tr>`;
+                    totalBalanceDisplay.textContent = "₱0.00";
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    totalSavings += data.amount;
+
+                    const nameClass = data.depositor === "Mark Andrew Erisare" ? "tag-mark" : "tag-mede";
+                    
+                    const row = `
+                        <tr>
+                            <td><span class="depositor-tag ${nameClass}">${data.depositor}</span></td>
+                            <td style="font-weight: 600;">₱${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td>${data.date}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+                // Update Total Balance UI
+                totalBalanceDisplay.textContent = `₱${totalSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            });
+        }
+    </script>
+</body>
+</html>
