@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -226,17 +226,17 @@
         <!-- LOGIN PORTAL -->
         <div id="login-container" class="card login-box">
             <h2>Savings Portal</h2>
-            <p>Mag-log in upang i-monitor ang inyong savings.</p>
+            <p>Log in to monitor your savings.</p>
             <form id="login-form">
                 <div class="form-group">
                     <label for="login-email">Email Address</label>
-                    <input type="email" id="login-email" required placeholder="Ipasok ang email">
+                    <input type="email" id="login-email" required placeholder="Enter your email">
                 </div>
                 <div class="form-group">
                     <label for="login-password">Password</label>
-                    <input type="password" id="login-password" required placeholder="Ipasok ang password">
+                    <input type="password" id="login-password" required placeholder="Enter your password">
                 </div>
-                <button type="submit" id="btn-login">Mag-log In</button>
+                <button type="submit" id="btn-login">Log In</button>
                 <div id="login-error" class="error-msg hidden"></div>
             </form>
         </div>
@@ -245,51 +245,51 @@
         <div id="dashboard-container" class="card hidden">
             <div class="dashboard-header">
                 <div>
-                    <h2>Mark & Medeliza Joint Savings</h2>
+                    <h2>Mark & Medz Joint Savings</h2>
                     <p style="color: var(--text-muted); font-size: 14px;">Real-time Co-Savings Monitor</p>
                 </div>
                 <button id="btn-logout" class="btn-logout">Log Out</button>
             </div>
 
             <div class="balance-card">
-                <h3>Kabuuang Naipon (Total Savings)</h3>
+                <h3>Total Savings</h3>
                 <div id="total-balance" class="balance-amount">₱0.00</div>
             </div>
 
             <div class="grid">
                 <!-- FORM NG HULOG -->
                 <div>
-                    <h3 style="margin-bottom: 15px; font-size: 18px;">Maglista ng Hulog</h3>
+                    <h3 style="margin-bottom: 15px; font-size: 18px;">Add Deposit</h3>
                     <form id="deposit-form" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
                         <div class="form-group">
-                            <label for="depositor-name">Sino ang Naghulog?</label>
+                            <label for="depositor-name">Who made the deposit?</label>
                             <select id="depositor-name" required>
-                                <option value="" disabled selected>Pumili...</option>
+                                <option value="" disabled selected>Select...</option>
                                 <option value="Mark Andrew Erisare">Mark Andrew Erisare</option>
                                 <option value="Medeliza Olino">Medeliza Olino</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="deposit-amount">Halaga (PHP)</label>
+                            <label for="deposit-amount">Amount (PHP)</label>
                             <input type="number" id="deposit-amount" min="1" step="any" placeholder="0.00" required>
                         </div>
                         <div class="form-group">
-                            <label for="deposit-date">Petsa ng Paghulog</label>
+                            <label for="deposit-date">Deposit Date</label>
                             <input type="date" id="deposit-date" required>
                         </div>
-                        <button type="submit">I-save ang Hulog</button>
+                        <button type="submit">Save Deposit</button>
                     </form>
                 </div>
 
                 <!-- KASAYSAYAN NG MGA HULOG -->
                 <div class="history-section">
-                    <h3 style="font-size: 18px;">Kasaysayan ng Transaksyon</h3>
+                    <h3 style="font-size: 18px;">Transaction History</h3>
                     <table>
                         <thead>
                             <tr>
-                                <th>Naghulog</th>
-                                <th>Halaga</th>
-                                <th>Petsa</th>
+                                <th>Depositor</th>
+                                <th>Amount</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody id="transaction-table-body">
@@ -308,7 +308,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Ang iyong Firebase Configuration
+        // Your Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBBMRruXH9Va15eBgogfwQF2zMD8gxZPps",
             authDomain: "admin-1cbb9.firebaseapp.com",
@@ -360,7 +360,7 @@
             signInWithEmailAndPassword(auth, email, password)
                 .catch(error => {
                     loginError.classList.remove('hidden');
-                    loginError.textContent = "Maling email o password. Paki-subukan muli.";
+                    loginError.textContent = "Incorrect email or password. Please try again.";
                 });
         });
 
@@ -389,7 +389,7 @@
                     document.getElementById('deposit-amount').value = '';
                     document.getElementById('depositor-name').value = '';
             } catch (error) {
-                alert("May error sa pag-save: " + error.message);
+                alert("Error saving deposit: " + error.message);
             }
         });
 
@@ -402,7 +402,7 @@
                 tableBody.innerHTML = '';
 
                 if(snapshot.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Wala pang nakatalang hulog.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No deposits recorded yet.</td></tr>`;
                     totalBalanceDisplay.textContent = "₱0.00";
                     return;
                 }
