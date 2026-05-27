@@ -1,46 +1,358 @@
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zxx">
+
 <head>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#ffffff">
-    <!-- Prevent Google and other bots from indexing -->
-  <meta name="robots" content="noindex, nofollow">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tech 404 - Official Digital Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => {
-          console.log('Service Worker Registered!', reg);
-        })
-        .catch(err => {
-          console.log('Service Worker Failed:', err);
-        });
-    });
-  }
-</script>
-<!-- Botpress Inject Scripts -->
-<script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
-<script src="https://files.bpcontent.cloud/2025/08/22/06/20250822063030-NCUYH9BC.js" defer></script>
+    <meta charset="UTF-8">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img/logo2.png">
+    <meta name="description" content="ViracTSV Management System">
+    <meta name="keywords" content="Gym, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google-adsense-account" content="ca-pub-5710842624363208">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5710842624363208"
+     crossorigin="anonymous"></script>
+    <title>ViracTSV | Home</title>
 
-<!-- Link your custom JS file -->
-<script src="javascript/chatbot.js"></script>
-  <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/index.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Oswald:300,400,500,600,700&display=swap" rel="stylesheet">
 
-  <script type="module">
-    
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/flaticon.css" type="text/css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
+    <link rel="stylesheet" href="css/barfiller.css" type="text/css">
+    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+</head>
+
+<body>
+
+    <!-- Page Preloder -->
+    <div id="preloder">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Offcanvas Menu Section Begin -->
+    <div class="offcanvas-menu-overlay"></div>
+    <div class="offcanvas-menu-wrapper">
+        <div class="canvas-close">
+            <i class="fa fa-close"></i>
+        </div>
+        <div class="canvas-search search-switch">
+            <i class="fa fa-search"></i>
+        </div>
+        <nav class="canvas-menu mobile-menu">
+            <ul>
+                <li><a href="./index.html">Home</a></li>
+                <li><a href="./suguan.html">Pagsamba</a></li>
+                <li><a href="./suguan-panata.html">Panata</a></li>
+                <li><a href="./games.html">Games</a></li>
+                <li><a href="./inventory.html">Inventory</a></li>
+                <li><a href="./user.html">My Schedule</a></li>
+                <li><a href="./admin-login.html">Admin</a></li>
+
+
+            </ul>
+        </nav>
+        <div id="mobile-menu-wrap"></div>
+        <div class="canvas-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+        </div>
+    </div>
+    <!-- Offcanvas Menu Section End -->
+
+    <!-- Header Section Begin -->
+    <header class="header-section">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="logo">
+                        <a href="./index.html">
+                            <img src="img/logo.png" alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <nav class="nav-menu">
+                        <ul>
+                            <li class="active"><a href="./index.html">Home</a></li>
+                            <li><a href="./suguan.html">Pagsamba</a></li>
+                            <li><a href="./suguan-panata.html">Panata</a></li>
+                            <li><a href="./games.html">Games</a></li>
+                            <li><a href="./inventory.html">Inventory</a></li>
+                <li><a href="./user.html">My Schedule</a></li>
+                <li><a href="././admin-login.html">Admin</a></li>
+
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-lg-3">
+                    <div class="top-option">
+                        <div class="to-search search-switch">
+                            <i class="fa fa-search"></i>
+                        </div>
+                        <div class="to-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas-open">
+                <i class="fa fa-bars"></i>
+            </div>
+        </div>
+    </header>
+    <!-- Header End -->
+
+    <!-- Hero Section Begin -->
+    <section class="hero-section">
+        <div class="hs-slider owl-carousel">
+            <div class="hs-item set-bg" data-setbg="img/hero/hero-1.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6 offset-lg-6">
+                            <div class="hi-text">
+                                <span>ENHANCED Version</span>
+                                <h1>Virac <strong>TSV</strong> Management System</h1>
+                                <a href="#" class="primary-btn" id="getInfoBtn">Get info</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+    <!-- Hero Section End -->
+
+    <!-- ChoseUs Section Begin -->
+    <section class="choseus-section spad" id="choseUsSection">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>ViracTSV</span>
+                        <h2>MANAGEMENT SYSTEM FUNCTION</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <div class="cs-item">
+                        <span class="flaticon-034-stationary-bike"></span>
+                        <h4>Member Management</h4>
+                        <p>Easily organize and oversee member profiles with seamless management tools.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="cs-item">
+                        <span class="flaticon-033-juice"></span>
+                        <h4>Schedule Assignment</h4>
+                        <p>Assign and manage schedules effortlessly for smooth coordination.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="cs-item">
+                        <span class="flaticon-002-dumbell"></span>
+                        <h4>Attendance Tracking</h4>
+                        <p>Track member attendance in real time with accurate records.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="cs-item">
+                        <span class="flaticon-014-heart-beat"></span>
+                        <h4>Admin Monitoring</h4>
+                        <p>Stay on top of activities with powerful admin monitoring features.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ChoseUs Section End -->
+
+    <!-- Classes Section Begin -->
+    <section class="classes-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Our</span>
+                        <h2>ACTVITIES</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-lg-6 col-md-6">
+                    <div class="class-item">
+                        <div class="ci-pic">
+                            <img src="img/classes/class-1.jpg" alt="">
+                        </div>
+                        <div class="ci-text">
+                            <h4>TSV Talk & Workshop</h4>
+                            <span>The TSV Talk and Workshop in Legazpi City, Albay, was attended by TSV officers from the Ecclesiastical District of Catanduanes. This activity enhanced their technical knowledge, particularly in cable management, which is vital for maintaining equipment functionality and longevity.</span>
+                            <a href="#"><i class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="class-item">
+                        <div class="ci-pic">
+                            <img src="img/classes/class-2.jpg" alt="">
+                        </div>
+                        <div class="ci-text">
+                            <h4>Catanduanes Takes 3rd Place</h4>
+                            <span>The District of Catanduanes earned 3rd Place Overall in the workshop activities. This achievement reflects the dedication and competence of the Catanduanes TSV officers, serving as a strong motivation for them to continue performing their duties with enthusiasm.</span>
+                            <a href="#"><i class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ChoseUs Section End -->
+
+    <!-- Banner Section Begin -->
+    <section class="banner-section set-bg" data-setbg="img/banner-bg.jpg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="bs-text">
+                        <h2>TSV Officer Schedule</h2>
+                        <div class="bt-tips">Weekly Suguan Here.</div>
+                        <a href="./suguan.html" class="primary-btn  btn-normal">View Suguan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Banner Section End -->
+
+    <!-- Pricing Section Begin -->
+    <section class="pricing-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>ViracTSV</span>
+                        <h2>ANNOUNCEMENT</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                                <div class="col-lg-4 col-md-8">
+                    <div class="ps-item">
+                        <h3>TSV Management System Deployment - Version 3</h3>
+                        <div class="pi-price">
+                        </div>
+                        <ul>
+                            <li>We are pleased to announce the official deployment of Version 3 of the TSV Website on September 14, 2025. This upgrade introduces significant improvements designed to enhance your overall experience, streamline processes, and strengthen system security.</li>
+                        </ul>
+                        <a href="./index.html" class="primary-btn pricing-btn">Try now</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-8">
+                    <div class="ps-item">
+                        <h3>TSV Games Released</h3>
+                        <div class="pi-price">
+                        </div>
+                        <ul>
+                            <li>We invite you to explore the latest feature of the Virac TSV website — TSV Games (Beta Version), an innovative way of learning through play. In these games, you will learn how to perform computer troubleshooting, the appropriate steps to resolve technical issues, and you will also become familiar with the different software and hardware components that are essential in the field of technology.</li>
+                        </ul>
+                        <a href="./games.html" class="primary-btn pricing-btn">Try now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Pricing Section End -->
+
+
+
+    <!-- Get In Touch Section End -->
+
+    <!-- Footer Section Begin -->
+    <section class="footer-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="fs-about">
+                        <div class="fa-logo">
+                            <a href="#"><img src="img/logo.png" alt=""></a>
+                        </div>
+                        <p>The ViracTSV Management System is a web-based application designed to streamline and modernize the schedulling process of the TSV officers.</p>
+                        <div class="fa-social">
+                            <a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.youtube.com/@INCTVChannel"><i class="fa fa-youtube-play"></i></a>
+                            <a href="https://www.instagram.com/incnewsandupdates/"><i class="fa fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <div class="fs-widget">
+                        <h4>Useful links</h4>
+                        <ul>
+                            <li><a href="https://www.facebook.com/IglesiaNiCristoChristianFamilyOrganizations/
+">INC CFO</a></li>
+                            <li><a href="https://t.me/INCNewsandUpdates">News and Updates</a></li>
+                            <li><a href="https://t.me/INCRadio">INCRadio</a></li>
+                            <li><a href="https://www.youtube.com/@INCTVChannel">INCTV Youtube Channel</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <div class="fs-widget">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="./policy.html">Privacy Policy</a></li>
+                            <li><a href="./policy.html">Terms of Service</a></li>
+                            <li><a href="https://web.webex.com/">Webex</a></li>
+                            <li><a href="https://tricaller.com/">TriCaller</a></li>
+                            
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="fs-widget">
+                        <h4>Tips & Guides</h4>
+                        <div class="fw-recent">
+                            <h6><a href="#">How to troubleshoot computer?</a></h6>
+                            <ul>
+                                <li>3 min read</li>
+                                <li>18 Comment</li>
+                            </ul>
+                        </div>
+                        <div class="fw-recent">
+                            <h6><a href="#">How to manage OBS in Video-Streaming?</a></h6>
+                            <ul>
+                                <li>3 min read</li>
+                                <li>28 Comment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="copyright-text">
+                        <p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+  ViracTSV | Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved <br>Special thanks <i class="fa fa-heart" aria-hidden="true"></i> to <a href="https://colorlib.com" target="_blank">Colorlib</a>
+  <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
+                    </div>
+                    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
-
-    const firebaseConfig = {     
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfigGate1 = {
         apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
         authDomain: "virac-tsv.firebaseapp.com",
         projectId: "virac-tsv",
@@ -48,387 +360,144 @@
         messagingSenderId: "455316064834",
         appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
     };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const storage = getStorage(app);
-
-    const myFullNameEl = document.getElementById('myFullName');
-    const myScheduleTextEl = document.getElementById('myScheduleText');
-    const myScheduleDateTimeTextEl = document.getElementById('myScheduleDateTimeText');
-    const btnTimeIn = document.getElementById('btnTimeIn');
-    const btnTimeOut = document.getElementById('btnTimeOut');
-    const attendanceTbody = document.getElementById('attendanceTbody');
-    const announcementsList = document.getElementById('announcementsList');
-    const fileInput = document.getElementById('fileInput');
-    const btnUploadExcuse = document.getElementById('btnUploadExcuse');
-    const uploadStatus = document.getElementById('uploadStatus');
-    const btnLogout = document.getElementById('btnLogout');
-    const alertContainer = document.getElementById('alertContainer');
-    const excuseReason = document.getElementById('excuseReason');
-
-    function showAlert(msg, type = 'success', timeout = 3500) {
-      const el = document.createElement('div');
-      el.className = `alert alert-${type} animated fadeInDown`;
-      el.textContent = msg;
-      alertContainer.appendChild(el);
-      setTimeout(() => {
-        el.classList.remove('fadeInDown');
-        el.classList.add('fadeOutUp');
-        setTimeout(() => el.remove(), 500);
-      }, timeout);
-    }
-
-    const dayNameToWeekday = { "Linggo": 0, "Lunes": 1, "Martes": 2, "Miyerkules": 3, "Huwebes": 4, "Biyernes": 5, "Sabado": 6 };
-
-    function computeNextScheduleDateTime(scheduleText) {
-      if (!scheduleText) return null;
-      const parts = scheduleText.trim().split(/\s+/);
-      const weekday = dayNameToWeekday[parts[0]];
-      if (weekday === undefined) return null;
-      let hour = 6, minute = 0, ampm = "AM";
-      const m = parts[1]?.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
-      if (m) { hour = parseInt(m[1]); minute = m[2] ? parseInt(m[2]) : 0; ampm = m[3] ? m[3].toUpperCase() : "AM"; }
-      if (ampm === "PM" && hour < 12) hour += 12;
-      if (ampm === "AM" && hour === 12) hour = 0;
-      const now = new Date();
-      let daysUntil = (weekday - now.getDay() + 7) % 7;
-      const candidate = new Date(now);
-      candidate.setDate(now.getDate() + daysUntil);
-      candidate.setHours(hour, minute, 0, 0);
-      return candidate;
-    }
-
-    function isScheduleToday(schedule) {
-      const now = new Date();
-      const schedDate = (typeof schedule === 'string' && schedule.includes('T')) ? new Date(schedule) : computeNextScheduleDateTime(schedule);
-      return schedDate && schedDate.toDateString() === now.toDateString();
-    }
-
-    function isWithinTwoHoursBefore(schedule) {
-      const sched = (typeof schedule === 'string' && schedule.includes('T')) ? new Date(schedule) : computeNextScheduleDateTime(schedule);
-      const diffHours = (sched - new Date()) / (1000 * 60 * 60);
-      return diffHours <= 2 && diffHours >= 0;
-    }
-
-    async function resetAttendanceWeekly(uid) {
-      const userRef = doc(db, 'users', uid);
-      const snap = await getDoc(userRef);
-      const data = snap.data();
-      const today = new Date();
-      if (today.getDay() === 1 && data.lastReset !== today.toDateString()) {
-        await updateDoc(userRef, { timeIn: null, timeOut: null, lastReset: today.toDateString() });
-      }
-    }
-
-    async function loadAttendanceHistory(uid) {
-      attendanceTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>';
-      const q = query(collection(db, 'attendance'), where('userId', '==', uid), orderBy('timestamp', 'desc'));
-      const snap = await getDocs(q);
-      attendanceTbody.innerHTML = '';
-      if (snap.empty) { attendanceTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No records yet.</td></tr>'; return; }
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const timeText = d.timestamp?.toDate ? d.timestamp.toDate().toLocaleString() : '';
-        attendanceTbody.innerHTML += `<tr><td>${d.date || ''}</td><td>${d.action}</td><td>${timeText}</td></tr>`;
-      });
-    }
-
-    async function doTimeIn(uid) {
-      btnTimeIn.disabled = true;
-      await addDoc(collection(db, 'attendance'), { userId: uid, action: 'timeIn', date: new Date().toLocaleDateString(), timestamp: serverTimestamp() });
-      await updateDoc(doc(db, 'users', uid), { timeIn: new Date().toISOString(), statusAttendance: 'Present' });
-      loadAttendanceHistory(uid);
-      btnTimeOut.disabled = false;
-      showAlert('Pagtanggap recorded');
-    }
-
-    async function doTimeOut(uid) {
-      btnTimeOut.disabled = true;
-      await addDoc(collection(db, 'attendance'), { userId: uid, action: 'timeOut', date: new Date().toLocaleDateString(), timestamp: serverTimestamp() });
-      await updateDoc(doc(db, 'users', uid), { timeOut: new Date().toISOString() });
-      loadAttendanceHistory(uid);
-      showAlert('Time Out recorded');
-    }
-
-    async function uploadExcuse(uid, file, reason) {
-      if (!file) { showAlert('Please choose a file', 'warning'); return; }
-      uploadStatus.textContent = 'Uploading...';
-      const ext = file.name.split('.').pop();
-      const path = `excuse_letters/${uid}/${Date.now()}.${ext}`;
-      const snap = await uploadBytes(ref(storage, path), file);
-      const url = await getDownloadURL(snap.ref);
-      await addDoc(collection(db, 'excuse_letters'), { userId: uid, fileName: file.name, url, reason: reason || '', uploadedAt: serverTimestamp() });
-      uploadStatus.textContent = 'Upload successful.';
-      fileInput.value = '';
-      excuseReason.value = '';
-      setTimeout(() => uploadStatus.textContent = '', 3000);
-    }
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  await resetAttendanceWeekly(user.uid);
-  const userRef = doc(db, 'users', user.uid);
-  const snap = await getDoc(userRef);
-
-  if (!snap.exists()) {
-    showAlert('User not found', 'danger');
-    return;
-  }
-
-  const data = snap.data();
-
-  // 🚫 If user is not admitted, redirect to denied.html
-  if (data.status !== 'admitted') {
-    window.location.href = 'denied.html';
-    return;
-  }
-
-  myFullNameEl.textContent = data.fullName || user.email;
-  myScheduleTextEl.textContent = 'Schedule: ' + (data.schedule || 'No schedule');
-
-  const scheduleDisplay = (data.scheduleDateTime)
-    ? new Date(data.scheduleDateTime)
-    : computeNextScheduleDateTime(data.schedule);
-
-  myScheduleDateTimeTextEl.textContent = scheduleDisplay
-    ? `(${scheduleDisplay.toLocaleString()})`
-    : '';
-
-  btnTimeIn.style.display = isScheduleToday(data.schedule || data.scheduleDateTime)
-    ? 'inline-block'
-    : 'none';
-
-  btnTimeOut.style.display = isWithinTwoHoursBefore(data.schedule || data.scheduleDateTime)
-    ? 'inline-block'
-    : 'none';
-
-  if (data.timeIn) {
-    btnTimeIn.disabled = true;
-    btnTimeOut.disabled = false;
-  }
-
-  await loadAttendanceHistory(user.uid);
-
-  onSnapshot(
-    collection(db, 'announcements'),
-    orderBy('date', 'desc'),
-    snap => {
-      announcementsList.innerHTML = '';
-      if (snap.empty) {
-        announcementsList.innerHTML = '<li class="list-group-item text-center text-muted">No announcements.</li>';
-        return;
-      }
-      snap.forEach(d => {
-        const a = d.data();
-        announcementsList.innerHTML += `
-          <a href="#" class="announcement-item">
-            <div class="announcement-icon"><i class="fa-solid fa-calendar-check"></i></div>
-            <div class="announcement-content">
-              <h5>${a.title}</h5>
-              <p>${a.content}</p>
-              <small>Posted on ${a.date}</small>
+    try { initializeApp(firebaseConfigGate1); } catch (e) {}
+    const authGate1 = getAuth();
+    const dbGate1 = getFirestore();
+    onAuthStateChanged(authGate1, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+                const userRef = doc(dbGate1, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+                    alert("Access denied. Only admitted users can view this page.");
+                    await signOut(authGate1);
+                    window.location.href = "login.html";
+                }
+    });
+</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfigGate2 = {
+        apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+        authDomain: "virac-tsv.firebaseapp.com",
+        projectId: "virac-tsv",
+        storageBucket: "virac-tsv.appspot.com",
+        messagingSenderId: "455316064834",
+        appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+    };
+    try { initializeApp(firebaseConfigGate2); } catch (e) {}
+    const authGate2 = getAuth();
+    const dbGate2 = getFirestore();
+    onAuthStateChanged(authGate2, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+                const userRef = doc(dbGate2, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists() || userSnap.data().status !== "admitted") {
+                    alert("Access denied. Only admitted users can view this page.");
+                    await signOut(authGate2);
+                    window.location.href = "login.html";
+                }
+    });
+</script>
+                                                    <div style="margin-top:10px;">
+                                                        <button id="logout-footer-btn" class="btn btn-danger" style="display:none;">Log Out</button>
+                                                    </div>
+                                                                                                        <script type="module">
+                                                                                                                import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+                                                                                                                import { getAuth, onAuthStateChanged, signOut, getFirebaseConfig } from './js/firebase-auth-gate.js';
+                                                                                                                // Initialize Firebase app if not already initialized
+                                                                                                                                                                        let logoutAppIndex;
+                                                                                                                                                                        try {
+                                                                                                                                                                            logoutAppIndex = initializeApp(getFirebaseConfig());
+                                                                                                                                                                        } catch (e) {
+                                                                                                                                                                            // App already initialized
+                                                                                                                                                                        }
+                                                                                                                const logoutBtnIndex = document.getElementById('logout-footer-btn');
+                                                                                                                const logoutAuthIndex = getAuth();
+                                                                                                                onAuthStateChanged(logoutAuthIndex, user => {
+                                                                                                                    if (user) {
+                                                                                                                        logoutBtnIndex.style.display = 'inline-block';
+                                                                                                                    } else {
+                                                                                                                        logoutBtnIndex.style.display = 'none';
+                                                                                                                    }
+                                                                                                                });
+                                                                                                                logoutBtnIndex.addEventListener('click', async () => {
+                                                                                                                    await signOut(logoutAuthIndex);
+                                                                                                                    window.location.href = 'login.html';
+                                                                                                                });
+                                                                                                        </script>
+                                                                        </div>
             </div>
-          </a>`;
-      });
-    }
-  );
-});
+        </div>
+    </section>
+    <!-- Footer Section End -->
 
+    <!-- Search model Begin -->
+    <div class="search-model">
+        <div class="h-100 d-flex align-items-center justify-content-center">
+            <div class="search-close-switch">+</div>
+            <form class="search-model-form">
+                <input type="text" id="search-input" placeholder="Search here.....">
+            </form>
+        </div>
+    </div>
+    <!-- Search model end -->
 
-    let currentUser = auth.currentUser;
-    btnTimeIn.onclick = () => currentUser && confirm('Confirm Pagtanggap?') && doTimeIn(currentUser.uid);
-    btnTimeOut.onclick = () => currentUser && confirm('Confirm Pagtupad?') && doTimeOut(currentUser.uid);
-    btnUploadExcuse.onclick = () => currentUser && uploadExcuse(currentUser.uid, fileInput.files[0], excuseReason.value.trim());
-    btnLogout.onclick = () => signOut(auth).then(() => window.location.href = 'login.html');
+    <!-- Js Plugins -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/masonry.pkgd.min.js"></script>
+    <script src="js/jquery.barfiller.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/main.js"></script>
+  <!-- Botpress Inject Scripts -->
+<script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/08/22/06/20250822063030-NCUYH9BC.js" defer></script>
 
-        onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        await addDoc(collection(db, "userAccessLog"), {
-          email: user.email,
-          uid: user.uid,
-          timestamp: serverTimestamp()
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAwzp3h8tt_tcDF1um--LoroAu1rErMmBc",
+            authDomain: "virac-tsv.firebaseapp.com",
+            projectId: "virac-tsv",
+            storageBucket: "virac-tsv.appspot.com",
+            messagingSenderId: "455316064834",
+            appId: "1:455316064834:web:1dc1033265b58a6c82bbdb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+            // User is logged in, allow access
         });
-        console.log("Logged:", user.email);
-      }
-    });
+</script>
 
-      // Restrict access
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = "login.html";
-      return;
+<script>
+// Smooth scroll to ChoseUs section when Get Info is clicked
+document.getElementById('getInfoBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    var section = document.getElementById('choseUsSection');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
     }
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists() || userSnap.data().status !== "admitted") {
-      alert("Access denied. Only admitted users can view this page.");
-      window.location.href = "login.html";
-    } else {
-      showLoading();
-      autoMarkAbsents(); // ✅ also trigger after login
-    }
-  });
-
-  // Logout function
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    showLoading();
-    signOut(auth).then(() => {
-      alert("You have been logged out.");
-      window.location.href = "login.html";
-    });
-  });
-  </script>
-</head>
-<body>
-
-<nav class="navbar navbar-expand-lg sticky-top">
-  <div class="container">
-    <a class="navbar-brand" href="index.html"><img src="image/tsv_logo.png" alt="TSV Virac Logo" height="60" /></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"><i class="fa-solid fa-bars text-white"></i></button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="tsvsuguan-auto.html">Suguan</a></li>
-                <li class="nav-item"><a class="nav-link" href="status.html">TSV Status</a></li>
-                        <li class="nav-item"><a class="nav-link" href="tsvgames.html">TSV Games (BETA)</a></li>
-                            <li class="nav-item"><a class="nav-link" href="inventory-report.html">Inventory</a></li>
-                                  <li class="nav-item"><a class="nav-link" href="member-panel.html">User Panel</a></li>
-                <li class="nav-item"><a class="nav-link" href="admin-login.html">Administrator</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<section class="hero">
-  <video autoplay muted loop playsinline class="hero-video">
-    <source src="video/cover.mp4" type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <h1 class="display-3">Welcome</h1>
-    <p class="lead mt-4">The official digital hub, your source for activities, announcements, and updates.</p>
-    <a href="#about-section" class="btn hero-button">Explore More <i class="fa-solid fa-arrow-down ms-2"></i></a>
-  </div>
-</section>
-
-<section id="about-section" class="py-5 bg-white">
-  <div class="container">
-    <h2 class="section-title text-center">About Us</h2>
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="about-icon-box">
-          <i class="fa-solid fa-calendar-alt"></i>
-          <h5 class="mt-3">Schedule of Duties</h5>
-          <p class="text-muted">Stay informed and organized — here’s your official schedule of duties</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="about-icon-box">
-          <i class="fa-solid fa-bullhorn"></i>
-          <h5 class="mt-3">Announcements</h5>
-          <p class="text-muted">Keeping TSV officers informed with the latest updates and announcements.</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="about-icon-box">
-          <i class="fa-solid fa-robot"></i>
-          <h5 class="mt-3">AI Support</h5>
-          <p class="text-muted">Providing reliable technical assistance for streaming and technical needs.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
----
-
-<section id="activities-section" class="py-5">
-  <div class="container">
-    <h2 class="section-title text-center">Activities</h2>
-    <div class="row g-4 justify-content-center">
-      <div class="col-md-6 col-lg-5">
-        <div class="activity-card">
-          <img src="image/TSVAct2.jpg" alt="TSV Talk and Workshop" class="img-fluid" />
-          <div class="activity-card-body">
-            <h5 class="card-title">TSV Talk and Workshop</h5>
-            <p class="card-text">The TSV Talk and Workshop in Legazpi City, Albay, was attended by TSV officers from the Ecclesiastical District of Catanduanes. This activity enhanced their technical knowledge, particularly in cable management, which is vital for maintaining equipment functionality and longevity.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-5">
-        <div class="activity-card">
-          <img src="image/TSVAct1.jpg" alt="Catanduanes 3rd Place" class="img-fluid" />
-          <div class="activity-card-body">
-            <h5 class="card-title">Catanduanes Takes 3rd Place</h5>
-            <p class="card-text">The District of Catanduanes earned 3rd Place Overall in the workshop activities. This achievement reflects the dedication and competence of the Catanduanes TSV officers, serving as a strong motivation for them to continue performing their duties with enthusiasm.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
----
-
-<section id="announcements-section" class="py-5 bg-white">
-  <div class="container">
-    <h2 class="section-title text-center">Announcements</h2>
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-                            <a href="#" class="announcement-item">
-            <div class="announcement-icon"><i class="fa-solid fa-calendar-check"></i></div>
-            <div class="announcement-content">
-              <h5>TSV Games (BETA) Released</h5>
-              <p>We invite you to explore the latest feature of the Virac TSV website — TSV Games (Beta Version), an innovative way of learning through play. In these games, you will learn how to perform computer troubleshooting, the appropriate steps to resolve technical issues, and you will also become familiar with the different software and hardware components that are essential in the field of technology.</p>
-              <small>Posted on August 28, 2025</small>
-            </div>
-          </a>
-                            <a href="#" class="announcement-item">
-            <div class="announcement-icon"><i class="fa-solid fa-calendar-check"></i></div>
-            <div class="announcement-content">
-              <h5>TSV Get Together - September 28, 2025 (Tentative)</h5>
-              <p>All TSV Virac members are required to attend our Anniversary Celebration at ARDCI SkyDeck.</p>
-              <small>Posted on August 24, 2025</small>
-            </div>
-          </a>
-        <div id="announcementsList">
-          <a href="#" class="announcement-item">
-            <div class="announcement-icon"><i class="fa-solid fa-wrench"></i></div>
-            <div class="announcement-content">
-              <h5>TSV Management System Deployment - Version 2</h5>
-              <p>We are pleased to announce the official deployment of Version 2 of the TSV Website on August 24, 2025. This upgrade introduces significant improvements designed to enhance your overall experience, streamline processes, and strengthen system security.</p>
-              <small>Posted on August 18, 2025</small>
-            </div>
-          </a>
-
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
----
-
-<footer class="text-center">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6 offset-md-3">
-<p class="footer-text">&copy; 2026 ViracTSV | All rights reserved.<br>
-   <a href="privacy.html" class="btn btn-link text-decoration-none">Privacy Policy & Terms of Service</a></p>
-      </div>
-    </div>
-  </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+});
+</script>
 </body>
+
 </html>
