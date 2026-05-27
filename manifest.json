@@ -1,0 +1,27 @@
+{
+  "background_color": "#ffffff",
+  "description": "ViracTSV Management System",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "www.viractsv",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "www.viractsv",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://www.viractsv.org/img/logo2.png",
+      "type": "image/png",
+      "sizes": "435x484",
+      "isSquare": false,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 435,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ]
+}
