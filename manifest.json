@@ -1,39 +1,43 @@
 {
-  "background_color": "#ffffff",
+  "id": "/",
+  "name": "ViracTSV Management System",
+  "short_name": "ViracTSV",
   "description": "ViracTSV Management System",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "www.viractsv",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "www.viractsv",
   "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "dir": "ltr",
+
   "icons": [
-
-     {
-    "src": "/img/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  },
-  {
-    "src": "/img/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  },
-
     {
-      "src": "https://www.viractsv.org/img/logo2.png",
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "435x484",
-      "isSquare": false,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 435,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "purpose": "any maskable"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard"
+    },
+    {
+      "src": "/screenshots/mobile-dashboard.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Mobile Dashboard"
     }
   ]
 }
